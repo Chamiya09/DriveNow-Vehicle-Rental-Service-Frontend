@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Lock, Bell, Shield, Save, ArrowLeft } from "lucide-react";
+import { User, Lock, Bell, Shield, Save, ArrowLeft, Car, MapPin, Clock, FileText, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -21,6 +21,10 @@ const DriverSettings = () => {
 
   // Profile Settings
   const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [licenseExpiry, setLicenseExpiry] = useState("");
+  const [yearsOfExperience, setYearsOfExperience] = useState("");
 
   // Password Settings
   const [currentPassword, setCurrentPassword] = useState("");
@@ -30,15 +34,44 @@ const DriverSettings = () => {
   // Notification Settings
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(true);
-  const [tripAlerts, setTripAlerts] = useState(true);
-  const [promotions, setPromotions] = useState(false);
+  const [bookingRequests, setBookingRequests] = useState(true);
+  const [routeUpdates, setRouteUpdates] = useState(true);
+  const [paymentAlerts, setPaymentAlerts] = useState(true);
+  const [maintenanceReminders, setMaintenanceReminders] = useState(true);
+
+  // Availability Settings
+  const [availableForBookings, setAvailableForBookings] = useState(true);
+  const [maxDailyTrips, setMaxDailyTrips] = useState("5");
+  const [preferredRadius, setPreferredRadius] = useState("50");
 
   useEffect(() => {
     if (user) {
       setPhone(user.phone || "");
+      setAddress(user.address || "");
+      loadDriverProfile();
       loadUserPreferences();
     }
   }, [user]);
+
+  const loadDriverProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:8090/api/drivers/${user?.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const driver = await response.json();
+        setLicenseNumber(driver.licenseNumber || "");
+        setLicenseExpiry(driver.licenseExpiry || "");
+        setYearsOfExperience(driver.yearsOfExperience?.toString() || "");
+      }
+    } catch (error) {
+      console.error("Error loading driver profile:", error);
+    }
+  };
 
   const loadUserPreferences = async () => {
     try {
@@ -53,8 +86,13 @@ const DriverSettings = () => {
         const prefs = await response.json();
         setEmailNotifications(prefs.emailNotifications ?? true);
         setSmsNotifications(prefs.smsNotifications ?? true);
-        setTripAlerts(prefs.tripAlerts ?? true);
-        setPromotions(prefs.promotions ?? false);
+        setBookingRequests(prefs.bookingRequests ?? true);
+        setRouteUpdates(prefs.routeUpdates ?? true);
+        setPaymentAlerts(prefs.paymentAlerts ?? true);
+        setMaintenanceReminders(prefs.maintenanceReminders ?? true);
+        setAvailableForBookings(prefs.availableForBookings ?? true);
+        setMaxDailyTrips(prefs.maxDailyTrips?.toString() || "5");
+        setPreferredRadius(prefs.preferredRadius?.toString() || "50");
       }
     } catch (error) {
       console.error("Error loading preferences:", error);
@@ -67,13 +105,19 @@ const DriverSettings = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:8090/api/users/${user?.id}`, {
+      const response = await fetch(`http://localhost:8090/api/drivers/${user?.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ 
+          phone, 
+          address,
+          licenseNumber,
+          licenseExpiry,
+          yearsOfExperience: parseInt(yearsOfExperience) 
+        }),
       });
 
       if (response.ok) {
@@ -145,8 +189,10 @@ const DriverSettings = () => {
         body: JSON.stringify({
           emailNotifications,
           smsNotifications,
-          tripAlerts,
-          promotions,
+          bookingRequests,
+          routeUpdates,
+          paymentAlerts,
+          maintenanceReminders,
         }),
       });
 
@@ -158,6 +204,36 @@ const DriverSettings = () => {
     } catch (error) {
       console.error("Error saving notification preferences:", error);
       toast.error("An error occurred while saving preferences");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveAvailability = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:8090/api/preferences/${user?.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          availableForBookings,
+          maxDailyTrips: parseInt(maxDailyTrips),
+          preferredRadius: parseFloat(preferredRadius),
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Availability settings saved successfully!");
+      } else {
+        toast.error("Failed to save availability settings");
+      }
+    } catch (error) {
+      console.error("Error saving availability settings:", error);
+      toast.error("An error occurred while saving settings");
     } finally {
       setLoading(false);
     }
@@ -201,7 +277,7 @@ const DriverSettings = () => {
             transition={{ delay: 0.1 }}
           >
             <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
                 <TabsTrigger value="profile" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
                   Profile
@@ -213,6 +289,10 @@ const DriverSettings = () => {
                 <TabsTrigger value="notifications" className="flex items-center gap-2">
                   <Bell className="h-4 w-4" />
                   Notifications
+                </TabsTrigger>
+                <TabsTrigger value="availability" className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Availability
                 </TabsTrigger>
               </TabsList>
 
@@ -245,6 +325,72 @@ const DriverSettings = () => {
                         className="mt-2"
                         required
                       />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="address" className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        Address
+                      </Label>
+                      <Input
+                        id="address"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="Your current address"
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        License Information
+                      </h4>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="license-number">License Number *</Label>
+                          <Input
+                            id="license-number"
+                            value={licenseNumber}
+                            onChange={(e) => setLicenseNumber(e.target.value)}
+                            placeholder="DL-XXXXXXXXXX"
+                            className="mt-2"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="license-expiry">License Expiry Date *</Label>
+                          <Input
+                            id="license-expiry"
+                            type="date"
+                            value={licenseExpiry}
+                            onChange={(e) => setLicenseExpiry(e.target.value)}
+                            className="mt-2"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="experience" className="flex items-center gap-2">
+                            <Award className="h-4 w-4" />
+                            Years of Driving Experience *
+                          </Label>
+                          <Input
+                            id="experience"
+                            type="number"
+                            min="0"
+                            value={yearsOfExperience}
+                            onChange={(e) => setYearsOfExperience(e.target.value)}
+                            placeholder="5"
+                            className="mt-2"
+                            required
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     <div className="pt-4">
@@ -379,15 +525,15 @@ const DriverSettings = () => {
 
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="trip-alerts">Trip Alerts</Label>
+                        <Label htmlFor="booking-requests">Booking Requests</Label>
                         <p className="text-sm text-muted-foreground">
-                          Get notified about new trip assignments
+                          Get notified when customers request your services
                         </p>
                       </div>
                       <Switch
-                        id="trip-alerts"
-                        checked={tripAlerts}
-                        onCheckedChange={setTripAlerts}
+                        id="booking-requests"
+                        checked={bookingRequests}
+                        onCheckedChange={setBookingRequests}
                       />
                     </div>
 
@@ -395,15 +541,47 @@ const DriverSettings = () => {
 
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="promotions">Promotions & Updates</Label>
+                        <Label htmlFor="route-updates">Route Updates</Label>
                         <p className="text-sm text-muted-foreground">
-                          Receive updates about new features and promotions
+                          Receive real-time updates about route changes
                         </p>
                       </div>
                       <Switch
-                        id="promotions"
-                        checked={promotions}
-                        onCheckedChange={setPromotions}
+                        id="route-updates"
+                        checked={routeUpdates}
+                        onCheckedChange={setRouteUpdates}
+                      />
+                    </div>
+
+                    <Separator />
+
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="payment-alerts">Payment Alerts</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Get notified about payment confirmations and earnings
+                        </p>
+                      </div>
+                      <Switch
+                        id="payment-alerts"
+                        checked={paymentAlerts}
+                        onCheckedChange={setPaymentAlerts}
+                      />
+                    </div>
+
+                    <Separator />
+
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="maintenance-reminders">Maintenance Reminders</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive reminders for vehicle maintenance schedules
+                        </p>
+                      </div>
+                      <Switch
+                        id="maintenance-reminders"
+                        checked={maintenanceReminders}
+                        onCheckedChange={setMaintenanceReminders}
                       />
                     </div>
 
@@ -411,6 +589,102 @@ const DriverSettings = () => {
                       <Button onClick={handleSaveNotifications} disabled={loading} className="w-full">
                         <Save className="mr-2 h-4 w-4" />
                         {loading ? "Saving..." : "Save Preferences"}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </TabsContent>
+
+              {/* Availability Tab */}
+              <TabsContent value="availability">
+                <Card className="p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="bg-gradient-hero p-3 rounded-lg">
+                      <Clock className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold">Availability Settings</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Manage your work availability and preferences
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator className="mb-6" />
+
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="available">Available for Bookings</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Set yourself as available to receive new booking requests
+                        </p>
+                      </div>
+                      <Switch
+                        id="available"
+                        checked={availableForBookings}
+                        onCheckedChange={setAvailableForBookings}
+                      />
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <Label htmlFor="max-trips" className="flex items-center gap-2">
+                        <Car className="h-4 w-4" />
+                        Maximum Daily Trips
+                      </Label>
+                      <Input
+                        id="max-trips"
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={maxDailyTrips}
+                        onChange={(e) => setMaxDailyTrips(e.target.value)}
+                        placeholder="5"
+                        className="mt-2"
+                        disabled={!availableForBookings}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Maximum number of trips you want to handle per day
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="radius" className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        Preferred Service Radius (km)
+                      </Label>
+                      <Input
+                        id="radius"
+                        type="number"
+                        min="5"
+                        max="200"
+                        value={preferredRadius}
+                        onChange={(e) => setPreferredRadius(e.target.value)}
+                        placeholder="50"
+                        className="mt-2"
+                        disabled={!availableForBookings}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Your preferred working radius from your location
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <h4 className="text-sm font-semibold mb-2">Availability Status</h4>
+                      <div className="flex items-center gap-2">
+                        <div className={`h-3 w-3 rounded-full ${availableForBookings ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                        <span className="text-sm">
+                          {availableForBookings ? 'You are currently available for bookings' : 'You are currently unavailable'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-4">
+                      <Button onClick={handleSaveAvailability} disabled={loading} className="w-full">
+                        <Save className="mr-2 h-4 w-4" />
+                        {loading ? "Saving..." : "Save Availability Settings"}
                       </Button>
                     </div>
                   </div>

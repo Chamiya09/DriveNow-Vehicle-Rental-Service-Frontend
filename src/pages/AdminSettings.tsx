@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Lock, Bell, Shield, Save, ArrowLeft, Settings, Database } from "lucide-react";
+import { User, Lock, Bell, Shield, Save, ArrowLeft, Settings, Car, DollarSign, Clock, MapPin, Percent } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -35,10 +35,15 @@ const AdminSettings = () => {
   const [bookingAlerts, setBookingAlerts] = useState(true);
   const [systemAlerts, setSystemAlerts] = useState(true);
 
-  // System Settings
-  const [autoApproveBookings, setAutoApproveBookings] = useState(false);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [requireDriverApproval, setRequireDriverApproval] = useState(true);
+  // Business Settings
+  const [instantBooking, setInstantBooking] = useState(false);
+  const [requireVehicleInspection, setRequireVehicleInspection] = useState(true);
+  const [autoAssignDrivers, setAutoAssignDrivers] = useState(false);
+  const [allowModifications, setAllowModifications] = useState(true);
+  const [requireInsuranceUpload, setRequireInsuranceUpload] = useState(true);
+  const [lateReturnPenalty, setLateReturnPenalty] = useState("10");
+  const [cancellationWindow, setCancellationWindow] = useState("24");
+  const [maxBookingDuration, setMaxBookingDuration] = useState("30");
 
   useEffect(() => {
     if (user) {
@@ -64,9 +69,14 @@ const AdminSettings = () => {
         setSmsNotifications(prefs.smsNotifications ?? true);
         setBookingAlerts(prefs.bookingAlerts ?? true);
         setSystemAlerts(prefs.systemAlerts ?? true);
-        setAutoApproveBookings(prefs.autoApproveBookings ?? false);
-        setMaintenanceMode(prefs.maintenanceMode ?? false);
-        setRequireDriverApproval(prefs.requireDriverApproval ?? true);
+        setInstantBooking(prefs.instantBooking ?? false);
+        setRequireVehicleInspection(prefs.requireVehicleInspection ?? true);
+        setAutoAssignDrivers(prefs.autoAssignDrivers ?? false);
+        setAllowModifications(prefs.allowModifications ?? true);
+        setRequireInsuranceUpload(prefs.requireInsuranceUpload ?? true);
+        setLateReturnPenalty(prefs.lateReturnPenalty ?? "10");
+        setCancellationWindow(prefs.cancellationWindow ?? "24");
+        setMaxBookingDuration(prefs.maxBookingDuration ?? "30");
       }
     } catch (error) {
       console.error("Error loading preferences:", error);
@@ -175,7 +185,7 @@ const AdminSettings = () => {
     }
   };
 
-  const handleSaveSystemSettings = async () => {
+  const handleSaveBusinessSettings = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -186,19 +196,24 @@ const AdminSettings = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          autoApproveBookings,
-          maintenanceMode,
-          requireDriverApproval,
+          instantBooking,
+          requireVehicleInspection,
+          autoAssignDrivers,
+          allowModifications,
+          requireInsuranceUpload,
+          lateReturnPenalty: parseFloat(lateReturnPenalty),
+          cancellationWindow: parseInt(cancellationWindow),
+          maxBookingDuration: parseInt(maxBookingDuration),
         }),
       });
 
       if (response.ok) {
-        toast.success("System settings saved successfully!");
+        toast.success("Business settings saved successfully!");
       } else {
-        toast.error("Failed to save system settings");
+        toast.error("Failed to save business settings");
       }
     } catch (error) {
-      console.error("Error saving system settings:", error);
+      console.error("Error saving business settings:", error);
       toast.error("An error occurred while saving settings");
     } finally {
       setLoading(false);
@@ -256,9 +271,9 @@ const AdminSettings = () => {
                   <Bell className="h-4 w-4" />
                   Notifications
                 </TabsTrigger>
-                <TabsTrigger value="system" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  System
+                <TabsTrigger value="business" className="flex items-center gap-2">
+                  <Car className="h-4 w-4" />
+                  Business
                 </TabsTrigger>
               </TabsList>
 
@@ -488,17 +503,17 @@ const AdminSettings = () => {
                 </Card>
               </TabsContent>
 
-              {/* System Tab */}
-              <TabsContent value="system">
+              {/* Business Tab */}
+              <TabsContent value="business">
                 <Card className="p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="bg-gradient-hero p-3 rounded-lg">
-                      <Database className="h-6 w-6 text-primary-foreground" />
+                      <Car className="h-6 w-6 text-primary-foreground" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold">System Settings</h3>
+                      <h3 className="text-xl font-semibold">Business Settings</h3>
                       <p className="text-sm text-muted-foreground">
-                        Configure system-wide preferences
+                        Configure rental business rules and policies
                       </p>
                     </div>
                   </div>
@@ -506,56 +521,170 @@ const AdminSettings = () => {
                   <Separator className="mb-6" />
 
                   <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="auto-approve">Auto-Approve Reviews</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Automatically approve new user reviews
-                        </p>
+                    {/* Booking Settings */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Booking Management
+                      </h4>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="instant-booking">Instant Booking</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Allow customers to book vehicles instantly without approval
+                            </p>
+                          </div>
+                          <Switch
+                            id="instant-booking"
+                            checked={instantBooking}
+                            onCheckedChange={setInstantBooking}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="allow-modifications">Allow Booking Modifications</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Let customers modify their bookings after confirmation
+                            </p>
+                          </div>
+                          <Switch
+                            id="allow-modifications"
+                            checked={allowModifications}
+                            onCheckedChange={setAllowModifications}
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="cancellation-window" className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            Cancellation Window (hours)
+                          </Label>
+                          <Input
+                            id="cancellation-window"
+                            type="number"
+                            min="0"
+                            value={cancellationWindow}
+                            onChange={(e) => setCancellationWindow(e.target.value)}
+                            placeholder="24"
+                            className="mt-2"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Free cancellation window before booking start time
+                          </p>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="max-booking" className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            Maximum Booking Duration (days)
+                          </Label>
+                          <Input
+                            id="max-booking"
+                            type="number"
+                            min="1"
+                            value={maxBookingDuration}
+                            onChange={(e) => setMaxBookingDuration(e.target.value)}
+                            placeholder="30"
+                            className="mt-2"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Maximum number of days for a single booking
+                          </p>
+                        </div>
                       </div>
-                      <Switch
-                        id="auto-approve"
-                        checked={autoApproveBookings}
-                        onCheckedChange={setAutoApproveBookings}
-                      />
                     </div>
 
                     <Separator />
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="maintenance-mode">Maintenance Mode</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Temporarily disable new bookings
-                        </p>
+                    {/* Vehicle & Driver Settings */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                        <Car className="h-4 w-4" />
+                        Vehicle & Driver Management
+                      </h4>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="vehicle-inspection">Require Vehicle Inspection</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Mandatory vehicle inspection before and after each rental
+                            </p>
+                          </div>
+                          <Switch
+                            id="vehicle-inspection"
+                            checked={requireVehicleInspection}
+                            onCheckedChange={setRequireVehicleInspection}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="auto-assign">Auto-Assign Drivers</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Automatically assign available drivers to bookings
+                            </p>
+                          </div>
+                          <Switch
+                            id="auto-assign"
+                            checked={autoAssignDrivers}
+                            onCheckedChange={setAutoAssignDrivers}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="insurance-upload">Require Insurance Documents</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Customers must upload insurance documents before booking
+                            </p>
+                          </div>
+                          <Switch
+                            id="insurance-upload"
+                            checked={requireInsuranceUpload}
+                            onCheckedChange={setRequireInsuranceUpload}
+                          />
+                        </div>
                       </div>
-                      <Switch
-                        id="maintenance-mode"
-                        checked={maintenanceMode}
-                        onCheckedChange={setMaintenanceMode}
-                      />
                     </div>
 
                     <Separator />
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="driver-approval">Require Driver Approval</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Manually approve new driver registrations
+                    {/* Pricing & Penalties */}
+                    <div>
+                      <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Pricing & Penalties
+                      </h4>
+                      
+                      <div>
+                        <Label htmlFor="late-penalty" className="flex items-center gap-2">
+                          <Percent className="h-4 w-4" />
+                          Late Return Penalty (%)
+                        </Label>
+                        <Input
+                          id="late-penalty"
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={lateReturnPenalty}
+                          onChange={(e) => setLateReturnPenalty(e.target.value)}
+                          placeholder="10"
+                          className="mt-2"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Additional charge percentage for late vehicle returns
                         </p>
                       </div>
-                      <Switch
-                        id="driver-approval"
-                        checked={requireDriverApproval}
-                        onCheckedChange={setRequireDriverApproval}
-                      />
                     </div>
 
                     <div className="pt-4">
-                      <Button onClick={handleSaveSystemSettings} disabled={loading} className="w-full">
+                      <Button onClick={handleSaveBusinessSettings} disabled={loading} className="w-full">
                         <Save className="mr-2 h-4 w-4" />
-                        {loading ? "Saving..." : "Save System Settings"}
+                        {loading ? "Saving..." : "Save Business Settings"}
                       </Button>
                     </div>
                   </div>

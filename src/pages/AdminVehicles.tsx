@@ -11,6 +11,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AddVehicleDialog from "@/components/AddVehicleDialog";
+import StarRating from "@/components/StarRating";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -266,7 +267,10 @@ const AdminVehicles = () => {
                         <TableCell className="capitalize">{vehicle.category.toLowerCase()}</TableCell>
                         <TableCell>${vehicle.pricePerDay}</TableCell>
                         <TableCell>
-                          <Badge variant="secondary">{vehicle.rating} ⭐</Badge>
+                          <div className="flex items-center gap-2">
+                            <StarRating rating={vehicle.rating} size="sm" readonly />
+                            <span className="text-sm text-amber-400 font-semibold">{vehicle.rating}</span>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Badge

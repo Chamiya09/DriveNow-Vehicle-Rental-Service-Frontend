@@ -623,10 +623,10 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <div className="flex pt-16">
+      <div className="flex-grow flex pt-16">
         {/* Sidebar */}
         <aside
           style={{ willChange: 'width' }}

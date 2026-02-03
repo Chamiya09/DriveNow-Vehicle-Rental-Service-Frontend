@@ -310,49 +310,18 @@ const AdminDrivers = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1 flex-wrap items-center">
-                            {driver.driversLicense && (
-                              <Badge 
-                                variant="outline" 
-                                className="text-xs cursor-pointer bg-green-50 hover:bg-green-100 border-green-300"
-                                onClick={() => handleViewDocument(driver.driversLicense!)}
-                                title="Driver's License"
-                              >
-                                DL ✓
-                              </Badge>
-                            )}
-                            {driver.vehicleRegistration && (
-                              <Badge 
-                                variant="outline" 
-                                className="text-xs cursor-pointer bg-blue-50 hover:bg-blue-100 border-blue-300"
-                                onClick={() => handleViewDocument(driver.vehicleRegistration!)}
-                                title="Vehicle Registration"
-                              >
-                                VR ✓
-                              </Badge>
-                            )}
-                            {driver.insuranceCertificate && (
-                              <Badge 
-                                variant="outline" 
-                                className="text-xs cursor-pointer bg-purple-50 hover:bg-purple-100 border-purple-300"
-                                onClick={() => handleViewDocument(driver.insuranceCertificate!)}
-                                title="Insurance Certificate"
-                              >
-                                IC ✓
-                              </Badge>
-                            )}
-                            {(driver.driversLicense || driver.vehicleRegistration || driver.insuranceCertificate) && (
+                            {(driver.driversLicense || driver.vehicleRegistration || driver.insuranceCertificate) ? (
                               <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="h-6 px-2 text-xs"
+                                className="h-8 px-3 text-xs"
                                 onClick={() => handleOpenDocumentsDialog(driver)}
                                 title="View All Documents"
                               >
                                 <Eye className="h-3 w-3 mr-1" />
-                                View All
+                                View Documents
                               </Button>
-                            )}
-                            {!driver.driversLicense && !driver.vehicleRegistration && !driver.insuranceCertificate && (
+                            ) : (
                               <span className="text-xs text-muted-foreground">None uploaded</span>
                             )}
                           </div>

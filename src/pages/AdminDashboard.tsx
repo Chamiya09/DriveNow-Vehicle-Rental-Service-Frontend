@@ -1525,23 +1525,35 @@ const AdminDashboard = () => {
               </Card>
 
               <Card className="p-6">
-                <h3 className="font-semibold text-lg mb-4">Top Vehicles</h3>
-                {vehicles.length > 0 ? (
+                <h3 className="font-semibold text-lg mb-4">Recent Drivers</h3>
+                {drivers.length > 0 ? (
                   <div className="space-y-3">
-                    {vehicles.slice(0, 5).map((vehicle) => (
-                      <div key={vehicle.id} className="flex items-center justify-between border-b pb-3 last:border-0">
-                        <div>
-                          <p className="font-medium">{vehicle.name}</p>
-                          <p className="text-sm text-muted-foreground capitalize">
-                            {vehicle.category.toLowerCase()} • ${vehicle.pricePerDay}/day
-                          </p>
+                    {drivers.slice(0, 5).map((driver) => (
+                      <div key={driver.id} className="flex items-center justify-between border-b pb-3 last:border-0">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold">
+                            {driver.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-medium">{driver.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {driver.email}
+                            </p>
+                          </div>
                         </div>
-                        <Badge variant="secondary">{vehicle.rating} ⭐</Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant={driver.available ? "default" : "secondary"}
+                            className={driver.available ? "bg-green-600" : ""}
+                          >
+                            {driver.available ? "Available" : "Unavailable"}
+                          </Badge>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-center py-8">No vehicles yet</p>
+                  <p className="text-muted-foreground text-center py-8">No drivers yet</p>
                 )}
               </Card>
             </div>

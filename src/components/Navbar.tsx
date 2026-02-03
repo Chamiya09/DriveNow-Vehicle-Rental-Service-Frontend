@@ -66,7 +66,6 @@ const Navbar = () => {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Vehicles", path: "/vehicles" },
-    { name: "Driver Reviews", path: "/driver-reviews" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];
@@ -84,7 +83,6 @@ const Navbar = () => {
       links.push(
         { name: "Home", path: "/", icon: LayoutDashboard },
         { name: "Vehicles", path: "/vehicles", icon: Car },
-        { name: "Driver Reviews", path: "/driver-reviews", icon: Star },
         { name: "About", path: "/about", icon: FileText },
         { name: "Contact", path: "/contact", icon: Users }
       );

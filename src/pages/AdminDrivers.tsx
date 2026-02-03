@@ -7,6 +7,8 @@ import {
   ArrowLeft,
   RefreshCw,
   Shield,
+  FileText,
+  Eye,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -22,6 +24,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { toast } from "sonner";
@@ -44,6 +54,8 @@ const AdminDrivers = () => {
   const [loading, setLoading] = useState(true);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [showAddDriver, setShowAddDriver] = useState(false);
+  const [showDocumentsDialog, setShowDocumentsDialog] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const { token, handleUnauthorized } = useAuth();
   const { sendNotificationToUser } = useNotifications();
   const navigate = useNavigate();
@@ -54,15 +66,23 @@ const AdminDrivers = () => {
       return;
     }
 
+    console.log("Attempting to view document:");
+    console.log("- First 100 chars:", documentData.substring(0, 100));
+    console.log("- Starts with 'data:':", documentData.startsWith('data:'));
+    console.log("- Starts with '/':", documentData.startsWith('/'));
+    console.log("- Document length:", documentData.length);
+
     try {
       // If it already has data: prefix, use it directly
       if (documentData.startsWith('data:')) {
+        console.log("Opening document with existing data: prefix");
         window.open(documentData, '_blank');
         return;
       }
 
       // Remove leading slash if present
       const base64Data = documentData.startsWith('/') ? documentData.substring(1) : documentData;
+      console.log("Cleaned base64 data first 50 chars:", base64Data.substring(0, 50));
       
       // Detect file type from base64 header
       let mimeType = 'application/pdf';
@@ -70,17 +90,23 @@ const AdminDrivers = () => {
       // JPEG starts with /9j/
       if (base64Data.startsWith('/9j/') || base64Data.startsWith('9j/')) {
         mimeType = 'image/jpeg';
+        console.log("Detected JPEG image");
       } 
       // PNG starts with iVBORw0KGgo
       else if (base64Data.startsWith('iVBORw0KGgo')) {
         mimeType = 'image/png';
+        console.log("Detected PNG image");
       }
       // PDF starts with JVBERi0
       else if (base64Data.startsWith('JVBERi0')) {
         mimeType = 'application/pdf';
+        console.log("Detected PDF file");
+      } else {
+        console.log("Could not detect file type, defaulting to PDF. First chars:", base64Data.substring(0, 20));
       }
       
       const dataUrl = `data:${mimeType};base64,${base64Data}`;
+      console.log("Opening new window with dataUrl");
       const newWindow = window.open();
       if (newWindow) {
         newWindow.document.write(`
@@ -95,11 +121,20 @@ const AdminDrivers = () => {
           </html>
         `);
         newWindow.document.close();
+        console.log("Document opened successfully");
+      } else {
+        console.error("Failed to open new window - popup blocked?");
+        toast.error("Failed to open document. Please allow popups for this site.");
       }
     } catch (error) {
       console.error("Error opening document:", error);
       toast.error("Failed to open document. Please try re-uploading the file.");
     }
+  };
+
+  const handleOpenDocumentsDialog = (driver: Driver) => {
+    setSelectedDriver(driver);
+    setShowDocumentsDialog(true);
   };
 
   useEffect(() => {
@@ -122,6 +157,15 @@ const AdminDrivers = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("Fetched drivers data:", data);
+        // Log first driver's documents for debugging
+        if (data.length > 0) {
+          console.log("First driver documents:", {
+            driversLicense: data[0].driversLicense ? data[0].driversLicense.substring(0, 50) + "..." : "null",
+            vehicleRegistration: data[0].vehicleRegistration ? data[0].vehicleRegistration.substring(0, 50) + "..." : "null",
+            insuranceCertificate: data[0].insuranceCertificate ? data[0].insuranceCertificate.substring(0, 50) + "..." : "null"
+          });
+        }
         setDrivers(data);
       } else {
         console.error("Failed to fetch drivers:", response.status);
@@ -277,7 +321,7 @@ const AdminDrivers = () => {
                           <span className="text-sm">{driver.licenseNumber || "N/A"}</span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-1 flex-wrap">
+                          <div className="flex gap-1 flex-wrap items-center">
                             {driver.driversLicense && (
                               <Badge 
                                 variant="outline" 
@@ -308,6 +352,18 @@ const AdminDrivers = () => {
                                 IC ✓
                               </Badge>
                             )}
+                            {(driver.driversLicense || driver.vehicleRegistration || driver.insuranceCertificate) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => handleOpenDocumentsDialog(driver)}
+                                title="View All Documents"
+                              >
+                                <Eye className="h-3 w-3 mr-1" />
+                                View All
+                              </Button>
+                            )}
                             {!driver.driversLicense && !driver.vehicleRegistration && !driver.insuranceCertificate && (
                               <span className="text-xs text-muted-foreground">None uploaded</span>
                             )}
@@ -328,16 +384,6 @@ const AdminDrivers = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              title="View Driver Details"
-                              onClick={() => {
-                                toast.info(`Driver: ${driver.name}\nEmail: ${driver.email}\nPhone: ${driver.phone}\nLicense: ${driver.licenseNumber || 'N/A'}`);
-                              }}
-                            >
-                              <Shield className="h-4 w-4" />
-                            </Button>
                             <Button 
                               variant="ghost" 
                               size="sm"
@@ -367,6 +413,150 @@ const AdminDrivers = () => {
         onOpenChange={setShowAddDriver}
         onDriverAdded={fetchDrivers}
       />
+
+      {/* Driver Documents Dialog */}
+      <Dialog open={showDocumentsDialog} onOpenChange={setShowDocumentsDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Driver Documents - {selectedDriver?.name}
+            </DialogTitle>
+            <DialogDescription>
+              View all uploaded documents for this driver
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedDriver && (
+            <div className="space-y-4">
+              {/* Driver Info */}
+              <Card className="p-4 bg-muted/50">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Email</p>
+                    <p className="font-medium">{selectedDriver.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Phone</p>
+                    <p className="font-medium">{selectedDriver.phone}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">License Number</p>
+                    <p className="font-medium">{selectedDriver.licenseNumber || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Status</p>
+                    <Badge className="bg-success text-success-foreground capitalize">
+                      {selectedDriver.status.toLowerCase()}
+                    </Badge>
+                  </div>
+                </div>
+              </Card>
+
+              <Separator />
+
+              {/* Documents Section */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">Uploaded Documents</h4>
+                
+                {/* Driver's License */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                      selectedDriver.driversLicense ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Driver's License</p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedDriver.driversLicense ? "Uploaded ✓" : "Not uploaded"}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedDriver.driversLicense ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDocument(selectedDriver.driversLicense!)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
+                  ) : (
+                    <Badge variant="secondary">Missing</Badge>
+                  )}
+                </div>
+
+                {/* Vehicle Registration */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                      selectedDriver.vehicleRegistration ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Vehicle Registration</p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedDriver.vehicleRegistration ? "Uploaded ✓" : "Not uploaded"}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedDriver.vehicleRegistration ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDocument(selectedDriver.vehicleRegistration!)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
+                  ) : (
+                    <Badge variant="secondary">Missing</Badge>
+                  )}
+                </div>
+
+                {/* Insurance Certificate */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                      selectedDriver.insuranceCertificate ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-400'
+                    }`}>
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Insurance Certificate</p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedDriver.insuranceCertificate ? "Uploaded ✓" : "Not uploaded"}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedDriver.insuranceCertificate ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDocument(selectedDriver.insuranceCertificate!)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
+                  ) : (
+                    <Badge variant="secondary">Missing</Badge>
+                  )}
+                </div>
+
+                {!selectedDriver.driversLicense && !selectedDriver.vehicleRegistration && !selectedDriver.insuranceCertificate && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                    <p>No documents uploaded yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -96,6 +96,7 @@ interface User {
   status: string;
   licenseNumber?: string;
   available?: boolean;
+  createdAt?: string;
 }
 
 interface Vehicle {
@@ -109,6 +110,7 @@ interface Vehicle {
   seats: number;
   transmission: string;
   fuelType: string;
+  createdAt?: string;
 }
 
 interface Booking {
@@ -124,6 +126,7 @@ interface Booking {
   paymentStatus?: string;
   pickupLocation: string;
   dropoffLocation: string;
+  createdAt?: string;
   userInfo?: {
     id: number;
     name: string;

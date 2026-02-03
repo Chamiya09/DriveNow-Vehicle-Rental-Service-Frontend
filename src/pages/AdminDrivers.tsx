@@ -58,24 +58,47 @@ const AdminDrivers = () => {
       // If it already has data: prefix, use it directly
       if (documentData.startsWith('data:')) {
         window.open(documentData, '_blank');
-      } else {
-        // Remove leading slash if present
-        const base64Data = documentData.startsWith('/') ? documentData.substring(1) : documentData;
-        
-        // Detect file type from base64 header or default to PDF
-        let mimeType = 'application/pdf';
-        if (base64Data.startsWith('/9j/')) {
-          mimeType = 'image/jpeg';
-        } else if (base64Data.startsWith('iVBORw0KGgo')) {
-          mimeType = 'image/png';
-        }
-        
-        const dataUrl = `data:${mimeType};base64,${base64Data}`;
-        window.open(dataUrl, '_blank');
+        return;
+      }
+
+      // Remove leading slash if present
+      const base64Data = documentData.startsWith('/') ? documentData.substring(1) : documentData;
+      
+      // Detect file type from base64 header
+      let mimeType = 'application/pdf';
+      
+      // JPEG starts with /9j/
+      if (base64Data.startsWith('/9j/') || base64Data.startsWith('9j/')) {
+        mimeType = 'image/jpeg';
+      } 
+      // PNG starts with iVBORw0KGgo
+      else if (base64Data.startsWith('iVBORw0KGgo')) {
+        mimeType = 'image/png';
+      }
+      // PDF starts with JVBERi0
+      else if (base64Data.startsWith('JVBERi0')) {
+        mimeType = 'application/pdf';
+      }
+      
+      const dataUrl = `data:${mimeType};base64,${base64Data}`;
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head><title>Document Viewer</title></head>
+            <body style="margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#f0f0f0;">
+              ${mimeType.startsWith('image') 
+                ? `<img src="${dataUrl}" style="max-width:100%; height:auto;" />` 
+                : `<iframe src="${dataUrl}" style="width:100vw; height:100vh; border:none;"></iframe>`
+              }
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
       }
     } catch (error) {
       console.error("Error opening document:", error);
-      toast.error("Failed to open document");
+      toast.error("Failed to open document. Please try re-uploading the file.");
     }
   };
 

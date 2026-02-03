@@ -5,6 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Edit, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface Review {
   id: number;
@@ -18,6 +28,13 @@ interface Review {
 const UserReviews = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [editRating, setEditRating] = useState(0);
+  const [editComment, setEditComment] = useState("");
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user, token } = useAuth();
 
   useEffect(() => {
@@ -89,6 +106,92 @@ const UserReviews = () => {
       toast.error('Failed to load reviews. Please check your connection.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditClick = (review: Review) => {
+    setSelectedReview(review);
+    setEditRating(review.rating);
+    setEditComment(review.comment);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (review: Review) => {
+    setSelectedReview(review);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!selectedReview) return;
+
+    if (editRating === 0) {
+      toast.error("Please select a rating");
+      return;
+    }
+
+    if (!editComment.trim()) {
+      toast.error("Please provide a comment");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch(`http://localhost:8090/api/reviews/${selectedReview.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          rating: editRating,
+          comment: editComment.trim(),
+          status: 'PENDING' // Set status to PENDING after edit
+        })
+      });
+
+      if (response.ok) {
+        toast.success("Review updated successfully! Waiting for admin approval.");
+        setEditDialogOpen(false);
+        fetchReviews(); // Refresh the list
+      } else {
+        const error = await response.text();
+        toast.error(error || "Failed to update review");
+      }
+    } catch (error) {
+      console.error("Error updating review:", error);
+      toast.error("Failed to update review");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteSubmit = async () => {
+    if (!selectedReview) return;
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch(`http://localhost:8090/api/reviews/${selectedReview.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success("Review deleted successfully");
+        setDeleteDialogOpen(false);
+        fetchReviews(); // Refresh the list
+      } else {
+        const error = await response.text();
+        toast.error(error || "Failed to delete review");
+      }
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      toast.error("Failed to delete review");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -201,11 +304,11 @@ const UserReviews = () => {
               </div>
               <p className="text-muted-foreground mb-4">{review.comment}</p>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" onClick={() => handleEditClick(review)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" onClick={() => handleDeleteClick(review)}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
                 </Button>
@@ -235,6 +338,81 @@ const UserReviews = () => {
           <Button className="mt-4">Browse Vehicles</Button>
         </Card>
       )}
+
+      {/* Edit Review Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Review</DialogTitle>
+            <DialogDescription>
+              Update your review for {selectedReview?.vehicleName}. After editing, your review will need admin approval again.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Rating *</Label>
+              <div className="flex gap-2 mt-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setEditRating(star)}
+                    onMouseEnter={() => setHoveredRating(star)}
+                    onMouseLeave={() => setHoveredRating(0)}
+                    className="transition-transform hover:scale-110"
+                  >
+                    <Star
+                      className={`h-8 w-8 ${
+                        star <= (hoveredRating || editRating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "fill-gray-300 text-gray-300"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="editComment">Your Review *</Label>
+              <Textarea
+                id="editComment"
+                value={editComment}
+                onChange={(e) => setEditComment(e.target.value)}
+                placeholder="Share your experience with this vehicle..."
+                className="mt-2 min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "Updating..." : "Update Review"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Review Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Review</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete your review for {selectedReview?.vehicleName}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "Deleting..." : "Delete Review"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -279,10 +279,10 @@ const DriverDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <div className="flex pt-16">
+      <div className="flex-grow flex pt-16">
         <aside
           style={{ willChange: 'width' }}
           className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-r border-slate-200 dark:border-slate-700 shadow-lg z-40 overflow-hidden transition-[width] duration-200 ease-out ${

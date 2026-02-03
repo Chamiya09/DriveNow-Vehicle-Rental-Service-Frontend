@@ -541,10 +541,6 @@ const UserDashboard = () => {
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Refresh
                   </Button>
-                  <Button variant="outline" onClick={() => navigate("/settings")}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </Button>
                 </div>
               </div>
             </motion.div>

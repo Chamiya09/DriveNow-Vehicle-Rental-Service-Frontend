@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, User, ArrowLeft, Phone, Home, Sparkles } from "lucide-react";
+import { Mail, Lock, User, ArrowLeft, Phone, Home, Sparkles, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ const Auth = () => {
     password?: string;
     name?: string;
     phone?: string;
+    address?: string;
     confirmPassword?: string;
   }>({});
 
@@ -112,6 +113,7 @@ const Auth = () => {
       const password = formData.get("password") as string;
       const confirmPassword = formData.get("confirmPassword") as string;
       const phone = formData.get("phone") as string;
+      const address = formData.get("address") as string;
 
       // Validation
       const newErrors: typeof errors = {};
@@ -137,6 +139,10 @@ const Auth = () => {
         }
       }
       
+      if (!address || address.trim().length < 5) {
+        newErrors.address = "Address must be at least 5 characters";
+      }
+      
       if (!password) {
         newErrors.password = "Password is required";
       } else if (password.length < 6) {
@@ -156,7 +162,7 @@ const Auth = () => {
         return;
       }
 
-      await register(name, email, password, phone.replace(/[\s-]/g, ""));
+      await register(name, email, password, phone.replace(/[\s-]/g, ""), address);
       toast.success("Account created successfully!");
       
       // Send welcome notification (will be delivered after login)
@@ -373,6 +379,30 @@ const Auth = () => {
                       {errors.phone && (
                         <p className="text-sm text-destructive flex items-center gap-1">
                           {errors.phone}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-address" className={errors.address ? "text-destructive" : ""}>
+                        Address
+                      </Label>
+                      <div className="relative">
+                        <MapPin className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 ${errors.address ? "text-destructive" : "text-muted-foreground"}`} />
+                        <Input
+                          id="signup-address"
+                          name="address"
+                          type="text"
+                          placeholder="Enter your address"
+                          className={`pl-10 ${errors.address ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                          required
+                          minLength={5}
+                          onChange={() => setErrors(prev => ({ ...prev, address: undefined }))}
+                        />
+                      </div>
+                      {errors.address && (
+                        <p className="text-sm text-destructive flex items-center gap-1">
+                          {errors.address}
                         </p>
                       )}
                     </div>

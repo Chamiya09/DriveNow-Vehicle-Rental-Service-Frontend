@@ -8,6 +8,7 @@ interface User {
   email: string;
   role: string;
   phone?: string;
+  address?: string;
   profileImage?: string;
   licenseNumber?: string;
   joinDate?: string;
@@ -17,7 +18,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
+  register: (name: string, email: string, password: string, phone?: string, address?: string) => Promise<void>;
   logout: () => void;
   handleUnauthorized: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
@@ -156,7 +157,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const register = async (name: string, email: string, password: string, phone?: string) => {
+  const register = async (name: string, email: string, password: string, phone?: string, address?: string) => {
     try {
       setIsLoading(true);
       
@@ -166,7 +167,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password, phone: phone || "" }),
+        body: JSON.stringify({ name, email, password, phone: phone || "", address: address || "" }),
       });
 
       if (!response.ok) {

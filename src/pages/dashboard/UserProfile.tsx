@@ -20,12 +20,33 @@ const UserProfile = () => {
     name: user?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
-    address: "",
+    address: user?.address || "",
   });
 
   useEffect(() => {
     fetchUserStats();
+    fetchUserProfile();
   }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`http://localhost:8090/api/users/${user?.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setFormData({
+          name: userData.name || "",
+          email: userData.email || "",
+          phone: userData.phone || "",
+          address: userData.address || "",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   const fetchUserStats = async () => {
     try {
@@ -61,9 +82,36 @@ const UserProfile = () => {
     }
   };
 
-  const handleSave = () => {
-    toast.success("Profile updated successfully!");
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://localhost:8090/api/users/${user?.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Profile updated successfully!");
+        setIsEditing(false);
+        
+        // Update user in localStorage
+        const updatedUser = { ...user, ...formData };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      } else {
+        toast.error("Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    }
   };
 
   return (

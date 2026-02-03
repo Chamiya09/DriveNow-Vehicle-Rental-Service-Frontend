@@ -273,7 +273,7 @@ const AdminDrivers = () => {
             </Card>
           </motion.div>
 
-          {/* Drivers Table */}
+          {/* Recent Drivers Table */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -281,30 +281,32 @@ const AdminDrivers = () => {
           >
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="font-semibold text-lg">All Drivers</h3>
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <UserCheck className="w-5 h-5 text-orange-600" />
+                  Recent Drivers
+                  <Badge variant="outline" className="text-xs ml-2">
+                    Last 5
+                  </Badge>
+                </h3>
               </div>
               {drivers.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
                       <TableHead>License No.</TableHead>
                       <TableHead>Documents</TableHead>
-                      <TableHead>Status</TableHead>
                       <TableHead>Availability</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {drivers.map((driver) => (
+                    {drivers.slice(0, 5).map((driver) => (
                       <TableRow key={driver.id}>
-                        <TableCell>{driver.id}</TableCell>
                         <TableCell className="font-medium">{driver.name}</TableCell>
                         <TableCell>{driver.email}</TableCell>
-                        <TableCell>{driver.phone}</TableCell>
                         <TableCell>
                           <span className="text-sm">{driver.licenseNumber || "N/A"}</span>
                         </TableCell>
@@ -314,22 +316,17 @@ const AdminDrivers = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 px-3 text-xs"
+                                className="h-7 px-2 text-xs"
                                 onClick={() => handleOpenDocumentsDialog(driver)}
                                 title="View All Documents"
                               >
                                 <Eye className="h-3 w-3 mr-1" />
-                                View Documents
+                                View
                               </Button>
                             ) : (
-                              <span className="text-xs text-muted-foreground">None uploaded</span>
+                              <span className="text-xs text-muted-foreground">None</span>
                             )}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-success text-success-foreground capitalize">
-                            {driver.status.toLowerCase()}
-                          </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge 
@@ -337,6 +334,11 @@ const AdminDrivers = () => {
                             className={driver.available ? "bg-green-600" : ""}
                           >
                             {driver.available ? "Available" : "Unavailable"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-success text-success-foreground capitalize">
+                            {driver.status.toLowerCase()}
                           </Badge>
                         </TableCell>
                         <TableCell>

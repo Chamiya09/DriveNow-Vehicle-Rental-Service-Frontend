@@ -51,28 +51,19 @@ const UserProfile = () => {
   const fetchUserStats = async () => {
     try {
       setLoading(true);
-      const bookingsResponse = await fetch(`http://localhost:8090/api/bookings/user/${user?.id}`, {
+      
+      // Fetch user stats from the dedicated API endpoint
+      const statsResponse = await fetch(`http://localhost:8090/api/users/${user?.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (bookingsResponse.ok) {
-        const bookings = await bookingsResponse.json();
-        const userBookings = bookings.filter(
-          (booking: any) => booking.user && booking.user.id === user?.id
-        );
+      if (statsResponse.ok) {
+        const userStats = await statsResponse.json();
         
-        const completedBookings = userBookings.filter(
-          (b: any) => b.status === "COMPLETED"
-        );
-        const totalSpent = completedBookings.reduce(
-          (sum: number, b: any) => sum + b.totalPrice,
-          0
-        );
-
         setStats({
-          totalBookings: userBookings.length,
-          totalSpent,
-          reviews: 0,
+          totalBookings: userStats.totalBookings || 0,
+          totalSpent: userStats.totalSpent || 0,
+          reviews: userStats.reviews || 0,
         });
       }
     } catch (error) {

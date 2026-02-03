@@ -54,6 +54,10 @@ interface UserStats {
   reviews: number;
   pendingBookings: number;
   messages: number;
+  bookingsChange?: string;
+  activeBookingsChange?: string;
+  spentChange?: string;
+  reviewsChange?: string;
 }
 
 const UserDashboard = () => {
@@ -95,7 +99,48 @@ const UserDashboard = () => {
         return;
       }
 
-      console.log("Fetching bookings for user ID:", user?.id);
+      console.log("Fetching data for user ID:", user?.id);
+
+      // Fetch user statistics from the dedicated API endpoint
+      const statsResponse = await fetch(
+        `http://localhost:8090/api/users/${user?.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (statsResponse.status === 403) {
+        console.error("403 Forbidden - Token expired or invalid");
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/auth");
+        return;
+      }
+
+      if (statsResponse.ok) {
+        const userStats = await statsResponse.json();
+        console.log("User stats from API:", userStats);
+
+        // Set stats from API response
+        setStats({
+          totalBookings: userStats.totalBookings || 0,
+          activeBookings: userStats.activeBookings || 0,
+          completedBookings: 0, // Will calculate from bookings
+          totalSpent: userStats.totalSpent || 0,
+          favoriteVehicles: 0, // Placeholder
+          reviews: userStats.reviews || 0,
+          pendingBookings: 0, // Will calculate from bookings
+          messages: 0, // Placeholder
+          bookingsChange: userStats.bookingsChange || "+0%",
+          activeBookingsChange: userStats.activeBookingsChange || "+0%",
+          spentChange: userStats.spentChange || "+0%",
+          reviewsChange: userStats.reviewsChange || "+0",
+        });
+      }
 
       // Fetch user's bookings using user-specific endpoint
       const bookingsResponse = await fetch(
@@ -141,71 +186,15 @@ const UserDashboard = () => {
         setBookings(processedBookings);
         console.log("Processed bookings:", processedBookings);
 
-        const totalBookings = processedBookings.length;
-        const activeBookings = processedBookings.filter((b: Booking) => 
-          b.status === "CONFIRMED" || b.status === "PENDING" || b.status === "IN_PROGRESS" || b.status === "DRIVER_ASSIGNED"
-        ).length;
+        // Update only the stats that need calculation from bookings
         const completedBookings = processedBookings.filter((b: Booking) => b.status === "COMPLETED").length;
         const pendingBookings = processedBookings.filter((b: Booking) => b.status === "PENDING").length;
-        const totalSpent = processedBookings
-          .filter((b: Booking) => b.status === "COMPLETED")
-          .reduce((sum: number, b: Booking) => sum + b.totalPrice, 0);
 
-        // Fetch reviews count
-        let reviewsCount = 0;
-        try {
-          const reviewsResponse = await fetch(`http://localhost:8090/api/reviews/user/${user.id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (reviewsResponse.ok) {
-            const reviews = await reviewsResponse.json();
-            reviewsCount = reviews.length;
-          }
-        } catch (error) {
-          console.error("Error fetching reviews:", error);
-        }
-
-        // Fetch favorite vehicles count
-        let favoriteCount = 0;
-        try {
-          const vehiclesResponse = await fetch(`http://localhost:8090/api/vehicles`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (vehiclesResponse.ok) {
-            const vehicles = await vehiclesResponse.json();
-            // This is a placeholder - you'd need a favorites API
-            favoriteCount = 3;
-          }
-        } catch (error) {
-          console.error("Error fetching vehicles:", error);
-        }
-
-        // Fetch messages count (placeholder - needs actual API)
-        let messagesCount = 0;
-        try {
-          // This would be your actual messages API call
-          messagesCount = 0; // Placeholder
-        } catch (error) {
-          console.error("Error fetching messages:", error);
-        }
-
-        const newStats = {
-          totalBookings,
-          activeBookings,
+        setStats(prevStats => ({
+          ...prevStats,
           completedBookings,
           pendingBookings,
-          totalSpent,
-          favoriteVehicles: favoriteCount,
-          reviews: reviewsCount,
-          messages: messagesCount,
-        };
-        
-        console.log("Setting stats to:", newStats);
-        setStats(newStats);
+        }));
       } else {
         console.error("Failed to fetch bookings:", bookingsResponse.status);
         toast.error("Failed to load bookings");

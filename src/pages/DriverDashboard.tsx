@@ -53,6 +53,10 @@ interface DriverStats {
   totalEarnings: number;
   averageRating: number;
   pendingTrips: number;
+  tripsChange?: string;
+  activeTripsChange?: string;
+  earningsChange?: string;
+  ratingChange?: string;
 }
 
 const DriverDashboard = () => {
@@ -92,6 +96,47 @@ const DriverDashboard = () => {
         return;
       }
 
+      console.log("Fetching data for driver ID:", user?.id);
+
+      // Fetch driver statistics from the dedicated API endpoint
+      const statsResponse = await fetch(
+        `http://localhost:8090/api/users/driver/${user?.id}/stats`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (statsResponse.status === 403) {
+        console.error("403 Forbidden - Token expired or invalid");
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/driver/auth");
+        return;
+      }
+
+      if (statsResponse.ok) {
+        const driverStats = await statsResponse.json();
+        console.log("Driver stats from API:", driverStats);
+
+        // Set stats from API response
+        setStats({
+          totalTrips: driverStats.totalTrips || 0,
+          completedTrips: driverStats.completedTrips || 0,
+          activeTrips: driverStats.activeTrips || 0,
+          totalEarnings: driverStats.totalEarnings || 0,
+          averageRating: driverStats.averageRating || 0,
+          pendingTrips: 0, // Will calculate from trips
+          tripsChange: driverStats.tripsChange || "+0%",
+          activeTripsChange: driverStats.activeTripsChange || "+0%",
+          earningsChange: driverStats.earningsChange || "+0%",
+          ratingChange: driverStats.ratingChange || "+0.0",
+        });
+      }
+
       // Fetch driver's bookings using driver-specific endpoint
       const bookingsResponse = await fetch(
         `http://localhost:8090/api/bookings/driver/${user?.id}`,
@@ -102,15 +147,6 @@ const DriverDashboard = () => {
           },
         }
       );
-
-      if (bookingsResponse.status === 403) {
-        console.error("403 Forbidden - Token expired or invalid");
-        toast.error("Session expired. Please login again.");
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        navigate("/driver/auth");
-        return;
-      }
 
       if (bookingsResponse.ok) {
         const driverBookings = await bookingsResponse.json();
@@ -131,48 +167,13 @@ const DriverDashboard = () => {
 
         setTrips(processedTrips);
 
-        const totalTrips = processedTrips.length;
-        const completedTrips = processedTrips.filter((t: Trip) => t.status === "COMPLETED").length;
-        const activeTrips = processedTrips.filter((t: Trip) => 
-          t.status === "CONFIRMED" || t.status === "IN_PROGRESS" || t.status === "DRIVER_ASSIGNED"
-        ).length;
+        // Update only pending trips count from bookings
         const pendingTrips = processedTrips.filter((t: Trip) => t.status === "PENDING").length;
-        
-        // Calculate earnings only from PAID bookings
-        const totalEarnings = driverBookings
-          .filter((booking: any) => booking.paymentStatus === "COMPLETED")
-          .reduce((sum: number, booking: any) => sum + ((booking.totalPrice || 0) * 0.15), 0);
 
-        // Fetch driver rating from reviews
-        let averageRating = 0;
-        try {
-          const reviewStatsResponse = await fetch(
-            `http://localhost:8090/api/driver-reviews/driver/${user?.id}/stats`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          
-          if (reviewStatsResponse.ok) {
-            const reviewStats = await reviewStatsResponse.json();
-            averageRating = reviewStats.averageRating || 0;
-          }
-        } catch (error) {
-          console.error("Error fetching review stats:", error);
-        }
-
-        const newStats = {
-          totalTrips,
-          completedTrips,
-          activeTrips,
-          totalEarnings,
-          averageRating: averageRating > 0 ? averageRating : 0,
+        setStats(prevStats => ({
+          ...prevStats,
           pendingTrips,
-        };
-        
-        setStats(newStats);
+        }));
       } else {
         console.error("Failed to fetch bookings:", bookingsResponse.status);
         toast.error("Failed to load bookings");

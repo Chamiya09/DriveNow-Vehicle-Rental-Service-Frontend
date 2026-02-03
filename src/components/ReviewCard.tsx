@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
+import StarRating from "./StarRating";
 
 interface ReviewCardProps {
   name: string;
@@ -43,18 +44,9 @@ const ReviewCard = ({ name, role, rating, comment, image, date, vehicleRented }:
           </div>
         </div>
 
-        <div className="flex items-center gap-1 mb-3">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`h-4 w-4 ${
-                i < rating
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "fill-gray-300 text-gray-300"
-              }`}
-            />
-          ))}
-          <span className="ml-2 text-sm font-medium">{rating}.0</span>
+        <div className="flex items-center gap-2 mb-3">
+          <StarRating rating={rating} size="md" showValue={false} animated={false} />
+          <span className="text-sm font-medium text-amber-600 dark:text-amber-500">{rating}.0</span>
         </div>
 
         <p className="text-muted-foreground mb-4 flex-grow">{comment}</p>

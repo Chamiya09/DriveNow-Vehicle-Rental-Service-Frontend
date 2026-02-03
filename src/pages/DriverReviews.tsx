@@ -99,8 +99,8 @@ const DriverReviews = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-              <Star className="h-8 w-8 text-yellow-400 fill-yellow-400 mx-auto mb-2" />
-              <div className="text-3xl font-bold mb-1">{averageRating}</div>
+              <Star className="h-8 w-8 text-amber-400 fill-amber-400 drop-shadow-[0_2px_8px_rgba(251,191,36,0.6)] mx-auto mb-2" />
+              <div className="text-3xl font-bold text-amber-600 dark:text-amber-500 mb-1">{averageRating}</div>
               <div className="text-sm text-muted-foreground">Average Rating</div>
               <div className="flex justify-center mt-2">
                 <StarRating rating={Math.round(parseFloat(averageRating))} size="md" animated />
@@ -146,11 +146,11 @@ const DriverReviews = () => {
                 <div key={rating} className="flex items-center gap-3">
                   <div className="flex items-center gap-1 w-20">
                     <span className="text-sm font-medium">{rating}</span>
-                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                    <Star className="h-4 w-4 text-amber-400 fill-amber-400 drop-shadow-[0_2px_8px_rgba(251,191,36,0.6)]" />
                   </div>
                   <div className="flex-1 h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-yellow-400 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-500"
                       style={{
                         width: `${totalReviews > 0 ? (ratingDistribution[index] / totalReviews) * 100 : 0}%`,
                       }}
@@ -225,9 +225,9 @@ const DriverReviews = () => {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded">
-                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                            <span className="text-sm font-semibold">{review.rating}.0</span>
+                          <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg">
+                            <StarRating rating={review.rating} size="sm" showValue={false} animated={false} />
+                            <span className="text-sm font-semibold text-amber-600 dark:text-amber-500">{review.rating}.0</span>
                           </div>
                         </div>
 
@@ -277,9 +277,9 @@ const DriverReviews = () => {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded">
-                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                            <span className="text-sm font-semibold">5.0</span>
+                          <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg">
+                            <StarRating rating={5} size="sm" showValue={false} animated={false} />
+                            <span className="text-sm font-semibold text-amber-600 dark:text-amber-500">5.0</span>
                           </div>
                         </div>
 
@@ -337,9 +337,9 @@ const DriverReviews = () => {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded">
-                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                            <span className="text-sm font-semibold">{review.rating}.0</span>
+                          <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg">
+                            <StarRating rating={review.rating} size="sm" showValue={false} animated={false} />
+                            <span className="text-sm font-semibold text-amber-600 dark:text-amber-500">{review.rating}.0</span>
                           </div>
                         </div>
 

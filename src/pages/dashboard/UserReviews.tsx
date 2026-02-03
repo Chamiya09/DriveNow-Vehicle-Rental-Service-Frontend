@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Edit, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import StarRating from "@/components/StarRating";
 import {
   Dialog,
   DialogContent,
@@ -244,9 +245,9 @@ const UserReviews = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Average Rating</p>
-              <p className="text-2xl font-bold">{avgRating}</p>
+              <p className="text-2xl font-bold text-amber-600 dark:text-amber-500">{avgRating}</p>
             </div>
-            <Star className="h-8 w-8 text-yellow-500 fill-yellow-500" />
+            <StarRating rating={parseFloat(avgRating)} size="lg" showValue={false} animated={true} />
           </div>
         </Card>
         <Card className="p-4">
@@ -287,19 +288,8 @@ const UserReviews = () => {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < review.rating
-                            ? "text-yellow-500 fill-yellow-500"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <Badge variant="secondary">{review.rating}.0</Badge>
+                  <StarRating rating={review.rating} size="md" showValue={false} animated={false} />
+                  <Badge variant="secondary" className="text-amber-600 dark:text-amber-500">{review.rating}.0</Badge>
                 </div>
               </div>
               <p className="text-muted-foreground mb-4">{review.comment}</p>
@@ -339,25 +329,15 @@ const UserReviews = () => {
           <div className="space-y-4">
             <div>
               <Label>Rating *</Label>
-              <div className="flex gap-2 mt-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setEditRating(star)}
-                    onMouseEnter={() => setHoveredRating(star)}
-                    onMouseLeave={() => setHoveredRating(0)}
-                    className="transition-transform hover:scale-110"
-                  >
-                    <Star
-                      className={`h-8 w-8 ${
-                        star <= (hoveredRating || editRating)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "fill-gray-300 text-gray-300"
-                      }`}
-                    />
-                  </button>
-                ))}
+              <div className="mt-2">
+                <StarRating 
+                  rating={editRating} 
+                  size="xl" 
+                  showValue={false}
+                  animated={false}
+                  interactive={true}
+                  onRatingChange={setEditRating}
+                />
               </div>
             </div>
             <div>

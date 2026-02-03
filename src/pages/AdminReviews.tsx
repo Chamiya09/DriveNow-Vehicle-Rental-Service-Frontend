@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import StarRating from "@/components/StarRating";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -447,9 +448,9 @@ const AdminReviews = () => {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <div className="flex items-center gap-1">
-                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                  <span className="font-semibold">{review.rating}</span>
+                                <div className="flex items-center gap-2">
+                                  <StarRating rating={review.rating} size="sm" showValue={false} animated={false} />
+                                  <span className="font-semibold text-amber-600 dark:text-amber-500">{review.rating}.0</span>
                                 </div>
                               </TableCell>
                               <TableCell className="max-w-xs">
@@ -607,9 +608,9 @@ const AdminReviews = () => {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <div className="flex items-center gap-1">
-                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                  <span className="font-semibold">{review.rating}</span>
+                                <div className="flex items-center gap-2">
+                                  <StarRating rating={review.rating} size="sm" showValue={false} animated={false} />
+                                  <span className="font-semibold text-amber-600 dark:text-amber-500">{review.rating}.0</span>
                                 </div>
                               </TableCell>
                               <TableCell className="max-w-xs">

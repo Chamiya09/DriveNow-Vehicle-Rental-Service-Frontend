@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Star, Users, Gauge, Fuel, CheckCircle, Shield, Clock, MessageSquare } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import StarRating from "@/components/StarRating";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -443,9 +444,14 @@ const VehicleDetail = () => {
                     <div>
                       <h1 className="text-3xl font-bold mb-2">{vehicle.name}</h1>
                       <div className="flex items-center space-x-2">
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-5 w-5 fill-warning text-warning" />
-                          <span className="font-semibold text-lg">
+                        <div className="flex items-center space-x-2">
+                          <StarRating 
+                            rating={realReviewCount > 0 ? realRating : 0} 
+                            size="lg" 
+                            showValue={false}
+                            animated={false}
+                          />
+                          <span className="font-semibold text-base text-amber-600 dark:text-amber-500">
                             {realReviewCount > 0 ? realRating.toFixed(1) : 'No ratings yet'}
                           </span>
                         </div>
@@ -524,9 +530,16 @@ const VehicleDetail = () => {
                 <Card className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="font-semibold text-2xl">Customer Reviews</h3>
-                    <Badge variant="outline" className="gap-1">
-                      <Star className="h-4 w-4 fill-warning text-warning" />
-                      {realReviewCount > 0 ? `${realRating.toFixed(1)} (${realReviewCount} ${realReviewCount === 1 ? 'review' : 'reviews'})` : 'No reviews yet'}
+                    <Badge variant="outline" className="gap-2">
+                      <StarRating 
+                        rating={realReviewCount > 0 ? realRating : 0} 
+                        size="sm" 
+                        showValue={false}
+                        animated={false}
+                      />
+                      <span className="text-amber-600 dark:text-amber-500 font-medium">
+                        {realReviewCount > 0 ? `${realRating.toFixed(1)} (${realReviewCount} ${realReviewCount === 1 ? 'review' : 'reviews'})` : 'No reviews yet'}
+                      </span>
                     </Badge>
                   </div>
 
@@ -546,18 +559,12 @@ const VehicleDetail = () => {
                                 <h4 className="font-semibold">{review.name}</h4>
                                 <span className="text-sm text-muted-foreground">{review.date}</span>
                               </div>
-                              <div className="flex items-center gap-1">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`h-4 w-4 ${
-                                      i < review.rating
-                                        ? "fill-yellow-400 text-yellow-400"
-                                        : "fill-gray-300 text-gray-300"
-                                    }`}
-                                  />
-                                ))}
-                              </div>
+                              <StarRating 
+                                rating={review.rating} 
+                                size="md" 
+                                showValue={false}
+                                animated={false}
+                              />
                             </div>
                             <p className="text-muted-foreground">{review.comment}</p>
                           </div>
@@ -589,25 +596,15 @@ const VehicleDetail = () => {
 
                       <div>
                         <Label>Rating *</Label>
-                        <div className="flex gap-2 mt-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              type="button"
-                              onClick={() => setReviewRating(star)}
-                              onMouseEnter={() => setHoveredRating(star)}
-                              onMouseLeave={() => setHoveredRating(0)}
-                              className="transition-transform hover:scale-110"
-                            >
-                              <Star
-                                className={`h-8 w-8 ${
-                                  star <= (hoveredRating || reviewRating)
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : "fill-gray-300 text-gray-300"
-                                }`}
-                              />
-                            </button>
-                          ))}
+                        <div className="mt-2">
+                          <StarRating 
+                            rating={reviewRating} 
+                            size="xl" 
+                            showValue={false}
+                            animated={false}
+                            interactive={true}
+                            onRatingChange={setReviewRating}
+                          />
                         </div>
                       </div>
 

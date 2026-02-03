@@ -8,8 +8,7 @@ import {
   Settings, 
   Bell, 
   Shield, 
-  Palette, 
-  Globe,
+  Palette,
   Eye,
   EyeOff,
   User,
@@ -24,10 +23,11 @@ interface UserSettings {
   emailNotifications: boolean;
   smsNotifications: boolean;
   promotionalEmails: boolean;
-  profileVisibility: boolean;
+  bookingReminders: boolean;
+  vehicleAvailabilityAlerts: boolean;
   showBookingHistory: boolean;
-  language: string;
-  currency: string;
+  autoRenewBookings: boolean;
+  preferredPickupTime: string;
   theme: string;
 }
 
@@ -42,10 +42,11 @@ const UserSettings = () => {
     emailNotifications: true,
     smsNotifications: false,
     promotionalEmails: false,
-    profileVisibility: true,
+    bookingReminders: true,
+    vehicleAvailabilityAlerts: false,
     showBookingHistory: false,
-    language: "English",
-    currency: "USD",
+    autoRenewBookings: false,
+    preferredPickupTime: "09:00",
     theme: "light"
   });
 
@@ -211,7 +212,7 @@ const UserSettings = () => {
             <div>
               <Label htmlFor="sms-notifications">SMS Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Get important updates via text message
+                Get important booking updates via text message
               </p>
             </div>
             <Switch
@@ -222,9 +223,35 @@ const UserSettings = () => {
           </div>
           <div className="flex items-center justify-between">
             <div>
+              <Label htmlFor="booking-reminders">Booking Reminders</Label>
+              <p className="text-sm text-muted-foreground">
+                Get reminders 24h before your pickup time
+              </p>
+            </div>
+            <Switch
+              id="booking-reminders"
+              checked={settings.bookingReminders}
+              onCheckedChange={(checked) => updateSetting("bookingReminders", checked)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="vehicle-alerts">Vehicle Availability Alerts</Label>
+              <p className="text-sm text-muted-foreground">
+                Notify me when my favorite vehicles become available
+              </p>
+            </div>
+            <Switch
+              id="vehicle-alerts"
+              checked={settings.vehicleAvailabilityAlerts}
+              onCheckedChange={(checked) => updateSetting("vehicleAvailabilityAlerts", checked)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
               <Label htmlFor="promotional-emails">Promotional Emails</Label>
               <p className="text-sm text-muted-foreground">
-                Receive special offers and promotions
+                Receive special offers and rental deals
               </p>
             </div>
             <Switch
@@ -236,37 +263,49 @@ const UserSettings = () => {
         </div>
       </Card>
 
-      {/* Privacy Card */}
+      {/* Rental Preferences Card */}
       <Card className="p-6">
         <div className="flex items-center gap-3 mb-4">
-          <Shield className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Privacy</h3>
+          <Settings className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold">Rental Preferences</h3>
         </div>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="profile-visibility">Profile Visibility</Label>
-              <p className="text-sm text-muted-foreground">
-                Make your profile visible to other users
-              </p>
-            </div>
-            <Switch
-              id="profile-visibility"
-              checked={settings.profileVisibility}
-              onCheckedChange={(checked) => updateSetting("profileVisibility", checked)}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
               <Label htmlFor="booking-history">Show Booking History</Label>
               <p className="text-sm text-muted-foreground">
-                Display your past bookings on your profile
+                Display your past rentals on your profile
               </p>
             </div>
             <Switch
               id="booking-history"
               checked={settings.showBookingHistory}
               onCheckedChange={(checked) => updateSetting("showBookingHistory", checked)}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="auto-renew">Auto-Renew Bookings</Label>
+              <p className="text-sm text-muted-foreground">
+                Automatically suggest renewal for frequent rentals
+              </p>
+            </div>
+            <Switch
+              id="auto-renew"
+              checked={settings.autoRenewBookings}
+              onCheckedChange={(checked) => updateSetting("autoRenewBookings", checked)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="pickup-time">Preferred Pickup Time</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Default pickup time for your bookings
+            </p>
+            <Input
+              id="pickup-time"
+              type="time"
+              value={settings.preferredPickupTime}
+              onChange={(e) => updateSetting("preferredPickupTime", e.target.value)}
             />
           </div>
         </div>
@@ -350,47 +389,6 @@ const UserSettings = () => {
               "Change Password"
             )}
           </Button>
-        </div>
-      </Card>
-
-      {/* Preferences Card */}
-      <Card className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Globe className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Preferences</h3>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="language">Language</Label>
-            <select
-              id="language"
-              value={settings.language}
-              onChange={(e) => updateSetting("language", e.target.value)}
-              className="w-full mt-2 px-3 py-2 border border-input rounded-md bg-background"
-            >
-              <option value="English">English</option>
-              <option value="Spanish">Spanish</option>
-              <option value="French">French</option>
-              <option value="German">German</option>
-              <option value="Chinese">Chinese</option>
-            </select>
-          </div>
-          <div>
-            <Label htmlFor="currency">Currency</Label>
-            <select
-              id="currency"
-              value={settings.currency}
-              onChange={(e) => updateSetting("currency", e.target.value)}
-              className="w-full mt-2 px-3 py-2 border border-input rounded-md bg-background"
-            >
-              <option value="USD">USD - US Dollar</option>
-              <option value="EUR">EUR - Euro</option>
-              <option value="GBP">GBP - British Pound</option>
-              <option value="JPY">JPY - Japanese Yen</option>
-              <option value="CNY">CNY - Chinese Yuan</option>
-              <option value="INR">INR - Indian Rupee</option>
-            </select>
-          </div>
         </div>
       </Card>
 

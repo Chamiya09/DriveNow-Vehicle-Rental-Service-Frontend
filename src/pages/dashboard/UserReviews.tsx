@@ -323,18 +323,6 @@ const UserReviews = () => {
           <p className="text-muted-foreground mb-4">
             After completing a booking, you can leave a review for the vehicle
           </p>
-          <div className="text-xs text-muted-foreground mt-4 p-3 bg-muted rounded">
-            <p><strong>Debug Info:</strong></p>
-            <p>User ID: {user?.id || 'Not found'}</p>
-            <p>User Email: {user?.email || 'Not found'}</p>
-            <p>Endpoint: /api/reviews/user/{user?.id || 'undefined'}</p>
-            <p className="mt-2 text-amber-600 dark:text-amber-400">
-              If you've submitted reviews but don't see them here:
-              <br />1. Check browser console (F12) for errors
-              <br />2. Verify reviews have your user_id in the database
-              <br />3. Make sure backend server restarted after code changes
-            </p>
-          </div>
           <Button className="mt-4">Browse Vehicles</Button>
         </Card>
       )}

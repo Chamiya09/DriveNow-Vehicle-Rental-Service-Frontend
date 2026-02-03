@@ -696,12 +696,12 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <div className="flex-grow flex pt-16">
+      <div className="flex-grow flex pt-16 relative">
         {/* Sidebar */}
         <aside
           style={{ willChange: 'width' }}
-          className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-r border-slate-200 dark:border-slate-700 shadow-lg z-40 overflow-hidden transition-[width] duration-200 ease-out ${
-            sidebarOpen ? 'w-72' : 'w-20'
+          className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-r border-slate-200 dark:border-slate-700 shadow-lg z-40 overflow-y-auto transition-all duration-300 ease-out ${
+            sidebarOpen ? 'w-72 translate-x-0' : 'w-0 lg:w-20 -translate-x-full lg:translate-x-0'
           }`}
         >
           <div className={`${sidebarOpen ? 'p-6' : 'p-3'} transition-[padding] duration-200 ease-out will-change-[padding]`}>
@@ -940,11 +940,11 @@ const AdminDashboard = () => {
         {/* Main Content */}
         <div 
           style={{ willChange: 'margin-left' }}
-          className={`flex-1 pb-16 transition-[margin-left] duration-200 ease-out ${
-            sidebarOpen ? 'ml-72' : 'ml-20'
-          }`}
+          className={`flex-1 pb-16 transition-all duration-300 ease-out ${
+            sidebarOpen ? 'lg:ml-72' : 'lg:ml-20'
+          } ml-0`}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className="max-w-7xl mx-auto container-padding pt-6 sm:pt-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -980,7 +980,7 @@ const AdminDashboard = () => {
                   <Activity className="w-5 h-5 text-primary" />
                   Quick Actions
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                   <Button
                     onClick={() => setShowAddVehicle(true)}
                     className="flex items-center gap-2 h-auto py-4"
@@ -1017,7 +1017,7 @@ const AdminDashboard = () => {
             </motion.div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {statCards.map((stat, index) => (
               <motion.div
                 key={stat.title}
@@ -1049,7 +1049,7 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6"
+            className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6"
           >
             {/* Total Revenue */}
             <Card className="p-6">

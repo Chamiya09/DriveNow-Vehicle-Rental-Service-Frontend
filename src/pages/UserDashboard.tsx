@@ -275,28 +275,28 @@ const UserDashboard = () => {
       value: stats.totalBookings,
       icon: Car,
       color: "from-blue-500 to-cyan-500",
-      change: "+8%",
+      change: stats.bookingsChange || "+0%",
     },
     {
       title: "Active Bookings",
       value: stats.activeBookings,
       icon: Clock,
       color: "from-green-500 to-emerald-500",
-      change: "+3%",
+      change: stats.activeBookingsChange || "+0%",
     },
     {
       title: "Total Spent",
       value: `$${(stats.totalSpent ?? 0).toFixed(2)}`,
       icon: TrendingUp,
       color: "from-orange-500 to-yellow-500",
-      change: "+15%",
+      change: stats.spentChange || "+0%",
     },
     {
       title: "Reviews Given",
       value: stats.reviews,
       icon: Star,
       color: "from-purple-500 to-pink-500",
-      change: "+2",
+      change: stats.reviewsChange || "+0",
     },
   ];
 

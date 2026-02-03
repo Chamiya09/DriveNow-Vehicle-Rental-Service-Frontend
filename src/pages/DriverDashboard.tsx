@@ -242,28 +242,28 @@ const DriverDashboard = () => {
       value: stats.totalTrips,
       icon: Car,
       color: "from-blue-500 to-cyan-500",
-      change: "+12%",
+      change: stats.tripsChange || "+0%",
     },
     {
       title: "Active Trips",
       value: stats.activeTrips,
       icon: Activity,
       color: "from-green-500 to-emerald-500",
-      change: "+5%",
+      change: stats.activeTripsChange || "+0%",
     },
     {
       title: "Total Earnings",
       value: `$${(stats.totalEarnings || 0).toFixed(2)}`,
       icon: DollarSign,
       color: "from-orange-500 to-yellow-500",
-      change: "+18%",
+      change: stats.earningsChange || "+0%",
     },
     {
       title: "Average Rating",
       value: stats.averageRating > 0 ? stats.averageRating.toFixed(1) : "N/A",
       icon: Star,
       color: "from-purple-500 to-pink-500",
-      change: stats.averageRating > 0 ? "+0.2" : "No reviews",
+      change: stats.ratingChange || (stats.averageRating > 0 ? "+0.2" : "No reviews"),
     },
   ];
 

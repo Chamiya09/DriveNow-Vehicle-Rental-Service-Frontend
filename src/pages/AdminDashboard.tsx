@@ -498,34 +498,101 @@ const AdminDashboard = () => {
     );
   }
 
+  // Calculate stats with percentage changes
+  const calculatePercentageChange = (current: number, previous: number): string => {
+    if (previous === 0) {
+      return current > 0 ? "+100%" : "0%";
+    }
+    const change = ((current - previous) / previous) * 100;
+    return change > 0 ? `+${Math.round(change)}%` : `${Math.round(change)}%`;
+  };
+
+  // Get last month and previous month data
+  const getMonthlyComparison = () => {
+    const now = new Date();
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    const prevMonthEnd = new Date(now.getFullYear(), now.getMonth() - 1, 0);
+
+    // Users
+    const lastMonthUsers = users.filter(u => {
+      const createdDate = new Date(u.createdAt || '');
+      return createdDate >= lastMonthStart && createdDate <= lastMonthEnd && u.role === 'USER';
+    }).length;
+    const prevMonthUsers = users.filter(u => {
+      const createdDate = new Date(u.createdAt || '');
+      return createdDate >= prevMonthStart && createdDate <= prevMonthEnd && u.role === 'USER';
+    }).length;
+
+    // Drivers
+    const lastMonthDrivers = drivers.filter(d => {
+      const createdDate = new Date(d.createdAt || '');
+      return createdDate >= lastMonthStart && createdDate <= lastMonthEnd;
+    }).length;
+    const prevMonthDrivers = drivers.filter(d => {
+      const createdDate = new Date(d.createdAt || '');
+      return createdDate >= prevMonthStart && createdDate <= prevMonthEnd;
+    }).length;
+
+    // Vehicles
+    const lastMonthVehicles = vehicles.filter(v => {
+      const createdDate = new Date(v.createdAt || '');
+      return createdDate >= lastMonthStart && createdDate <= lastMonthEnd;
+    }).length;
+    const prevMonthVehicles = vehicles.filter(v => {
+      const createdDate = new Date(v.createdAt || '');
+      return createdDate >= prevMonthStart && createdDate <= prevMonthEnd;
+    }).length;
+
+    // Bookings
+    const lastMonthBookings = bookings.filter(b => {
+      const createdDate = new Date(b.createdAt || b.startDate);
+      return createdDate >= lastMonthStart && createdDate <= lastMonthEnd;
+    }).length;
+    const prevMonthBookings = bookings.filter(b => {
+      const createdDate = new Date(b.createdAt || b.startDate);
+      return createdDate >= prevMonthStart && createdDate <= prevMonthEnd;
+    }).length;
+
+    return {
+      usersChange: calculatePercentageChange(lastMonthUsers, prevMonthUsers),
+      driversChange: calculatePercentageChange(lastMonthDrivers, prevMonthDrivers),
+      vehiclesChange: calculatePercentageChange(lastMonthVehicles, prevMonthVehicles),
+      bookingsChange: calculatePercentageChange(lastMonthBookings, prevMonthBookings),
+    };
+  };
+
+  const monthlyComparison = getMonthlyComparison();
+
   const statCards = [
     {
       title: "Total Users",
       value: totalUsers,
       icon: Users,
       color: "bg-primary",
-      trend: "+12%",
+      trend: monthlyComparison.usersChange,
     },
     {
       title: "Total Drivers",
       value: totalDrivers,
       icon: UserCheck,
       color: "bg-secondary",
-      trend: "+8%",
+      trend: monthlyComparison.driversChange,
     },
     {
       title: "Total Vehicles",
       value: totalVehicles,
       icon: Car,
       color: "bg-accent",
-      trend: "+5%",
+      trend: monthlyComparison.vehiclesChange,
     },
     {
       title: "Total Bookings",
       value: totalBookings,
       icon: Calendar,
       color: "bg-success",
-      trend: "+18%",
+      trend: monthlyComparison.bookingsChange,
     },
   ];
 

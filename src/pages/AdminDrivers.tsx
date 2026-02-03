@@ -65,24 +65,31 @@ const AdminDrivers = () => {
       toast.error("Document not available");
       return;
     }
-
-    console.log("Attempting to view document:");
-    console.log("- First 100 chars:", documentData.substring(0, 100));
-    console.log("- Starts with 'data:':", documentData.startsWith('data:'));
-    console.log("- Starts with '/':", documentData.startsWith('/'));
-    console.log("- Document length:", documentData.length);
-
+    
     try {
       // If it already has data: prefix, use it directly
       if (documentData.startsWith('data:')) {
-        console.log("Opening document with existing data: prefix");
-        window.open(documentData, '_blank');
+        const newWindow = window.open();
+        if (newWindow) {
+          const mimeType = documentData.split(';')[0].split(':')[1];
+          newWindow.document.write(`
+            <html>
+              <head><title>Document Viewer</title></head>
+              <body style="margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#f0f0f0;">
+                ${mimeType.startsWith('image') 
+                  ? `<img src="${documentData}" style="max-width:100%; height:auto;" />` 
+                  : `<iframe src="${documentData}" style="width:100vw; height:100vh; border:none;"></iframe>`
+                }
+              </body>
+            </html>
+          `);
+          newWindow.document.close();
+        }
         return;
       }
 
       // Remove leading slash if present
       const base64Data = documentData.startsWith('/') ? documentData.substring(1) : documentData;
-      console.log("Cleaned base64 data first 50 chars:", base64Data.substring(0, 50));
       
       // Detect file type from base64 header
       let mimeType = 'application/pdf';
@@ -90,23 +97,17 @@ const AdminDrivers = () => {
       // JPEG starts with /9j/
       if (base64Data.startsWith('/9j/') || base64Data.startsWith('9j/')) {
         mimeType = 'image/jpeg';
-        console.log("Detected JPEG image");
       } 
       // PNG starts with iVBORw0KGgo
       else if (base64Data.startsWith('iVBORw0KGgo')) {
         mimeType = 'image/png';
-        console.log("Detected PNG image");
       }
       // PDF starts with JVBERi0
       else if (base64Data.startsWith('JVBERi0')) {
         mimeType = 'application/pdf';
-        console.log("Detected PDF file");
-      } else {
-        console.log("Could not detect file type, defaulting to PDF. First chars:", base64Data.substring(0, 20));
       }
       
       const dataUrl = `data:${mimeType};base64,${base64Data}`;
-      console.log("Opening new window with dataUrl");
       const newWindow = window.open();
       if (newWindow) {
         newWindow.document.write(`
@@ -121,10 +122,6 @@ const AdminDrivers = () => {
           </html>
         `);
         newWindow.document.close();
-        console.log("Document opened successfully");
-      } else {
-        console.error("Failed to open new window - popup blocked?");
-        toast.error("Failed to open document. Please allow popups for this site.");
       }
     } catch (error) {
       console.error("Error opening document:", error);
@@ -157,15 +154,6 @@ const AdminDrivers = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched drivers data:", data);
-        // Log first driver's documents for debugging
-        if (data.length > 0) {
-          console.log("First driver documents:", {
-            driversLicense: data[0].driversLicense ? data[0].driversLicense.substring(0, 50) + "..." : "null",
-            vehicleRegistration: data[0].vehicleRegistration ? data[0].vehicleRegistration.substring(0, 50) + "..." : "null",
-            insuranceCertificate: data[0].insuranceCertificate ? data[0].insuranceCertificate.substring(0, 50) + "..." : "null"
-          });
-        }
         setDrivers(data);
       } else {
         console.error("Failed to fetch drivers:", response.status);

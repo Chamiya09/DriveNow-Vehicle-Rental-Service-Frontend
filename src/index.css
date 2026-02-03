@@ -148,36 +148,38 @@ All colors MUST be HSL.
     --chart-4: 142 76% 45%;
     --chart-5: 0 72% 55%;
     
-    /* Premium Gradients - Dark */
-    --gradient-hero: linear-gradient(135deg, hsl(210 100% 55%) 0%, hsl(195 100% 50%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(215 28% 13%) 0%, hsl(215 28% 16%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(210 100% 55%) 0%, hsl(210 100% 70%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(195 100% 50%) 0%, hsl(195 100% 65%) 100%);
-    --gradient-mesh: radial-gradient(at 40% 20%, hsla(210, 100%, 55%, 0.12) 0px, transparent 50%),
-                     radial-gradient(at 80% 0%, hsla(195, 100%, 50%, 0.1) 0px, transparent 50%),
-                     radial-gradient(at 0% 50%, hsla(25, 95%, 60%, 0.08) 0px, transparent 50%);
+    /* Premium Gradients - Dark - More vibrant and dynamic */
+    --gradient-hero: linear-gradient(135deg, hsl(207 90% 54%) 0%, hsl(186 94% 50%) 50%, hsl(31 97% 58%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(222 35% 11%) 0%, hsl(220 30% 14%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(207 90% 54%) 0%, hsl(207 90% 70%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(186 94% 50%) 0%, hsl(186 94% 65%) 100%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsla(207, 90%, 54%, 0.18) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsla(186, 94%, 50%, 0.15) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsla(31, 97%, 58%, 0.12) 0px, transparent 50%),
+                     radial-gradient(at 100% 100%, hsla(145, 80%, 48%, 0.08) 0px, transparent 50%);
     
-    /* Enhanced Shadows with Glow - Dark */
-    --shadow-sm: 0 2px 8px hsla(0, 0%, 0%, 0.35);
-    --shadow-md: 0 4px 16px hsla(0, 0%, 0%, 0.45);
-    --shadow-lg: 0 8px 32px hsla(0, 0%, 0%, 0.55);
-    --shadow-xl: 0 12px 48px hsla(0, 0%, 0%, 0.65);
-    --shadow-glow: 0 0 40px hsla(210, 100%, 55%, 0.4);
-    --shadow-glow-secondary: 0 0 40px hsla(195, 100%, 50%, 0.4);
+    /* Enhanced Shadows with Glow - Dark - More prominent */
+    --shadow-sm: 0 2px 8px hsla(0, 0%, 0%, 0.4);
+    --shadow-md: 0 4px 16px hsla(0, 0%, 0%, 0.5);
+    --shadow-lg: 0 8px 32px hsla(0, 0%, 0%, 0.6);
+    --shadow-xl: 0 12px 48px hsla(0, 0%, 0%, 0.7);
+    --shadow-glow: 0 0 48px hsla(207, 90%, 54%, 0.5), 0 0 24px hsla(207, 90%, 54%, 0.3);
+    --shadow-glow-secondary: 0 0 48px hsla(186, 94%, 50%, 0.5), 0 0 24px hsla(186, 94%, 50%, 0.3);
     
-    /* Glassmorphism - Dark */
-    --glass-bg: hsla(215, 28%, 13%, 0.75);
-    --glass-border: hsla(210, 100%, 55%, 0.2);
-    --glass-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.5);
+    /* Glassmorphism - Dark - Enhanced */
+    --glass-bg: hsla(222, 35%, 11%, 0.8);
+    --glass-border: hsla(207, 90%, 54%, 0.25);
+    --glass-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.6);
     
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 210 100% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 16%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 20%;
-    --sidebar-ring: 210 100% 55%;
+    /* Sidebar - Dark with accent colors */
+    --sidebar-background: 220 35% 9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 207 90% 54%;
+    --sidebar-primary-foreground: 220 35% 8%;
+    --sidebar-accent: 220 30% 15%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 30% 18%;
+    --sidebar-ring: 207 90% 54%;
   }
 }
 
@@ -283,5 +285,128 @@ All colors MUST be HSL.
       opacity: 0.9;
       filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.8));
     }
+  }
+
+  /* Mobile-First Responsive Utilities */
+  .mobile-nav-slide {
+    @apply fixed inset-y-0 left-0 w-full max-w-sm transform transition-transform duration-300 ease-in-out z-50;
+  }
+
+  .mobile-nav-slide.closed {
+    @apply -translate-x-full;
+  }
+
+  .mobile-nav-slide.open {
+    @apply translate-x-0;
+  }
+
+  /* Touch-Friendly */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] inline-flex items-center justify-center;
+  }
+
+  /* Mobile Cards */
+  .mobile-card {
+    @apply p-4 sm:p-6;
+  }
+
+  /* Mobile Text Sizes */
+  .mobile-heading {
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+  }
+
+  .mobile-subheading {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+
+  .mobile-body {
+    @apply text-sm sm:text-base;
+  }
+
+  /* Responsive Spacing */
+  .section-padding {
+    @apply px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16;
+  }
+
+  .container-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Mobile Grid */
+  .mobile-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+
+  .mobile-grid-auto {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  /* Dark Mode Enhancements */
+  .dark .card-hover {
+    @apply hover:shadow-glow transition-all duration-300;
+  }
+
+  .dark .border-glow {
+    @apply border-primary/30 shadow-[0_0_15px_rgba(59,130,246,0.15)];
+  }
+
+  .dark .text-glow {
+    text-shadow: 0 0 20px hsla(207, 90%, 54%, 0.5);
+  }
+
+  /* Neon Effects for Dark Mode */
+  .neon-border {
+    @apply relative;
+  }
+
+  .dark .neon-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-300;
+    background: linear-gradient(
+      135deg,
+      hsla(207, 90%, 54%, 0.4),
+      hsla(186, 94%, 50%, 0.4),
+      hsla(31, 97%, 58%, 0.4)
+    );
+    filter: blur(20px);
+  }
+
+  .dark .neon-border:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Responsive Table */
+  .responsive-table {
+    @apply block overflow-x-auto -mx-4 sm:mx-0;
+  }
+
+  .responsive-table table {
+    @apply min-w-full;
+  }
+
+  /* Mobile Dashboard Grid */
+  .dashboard-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  /* Status Pills - Enhanced for Dark Mode */
+  .dark .status-pill {
+    @apply px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm;
+  }
+
+  .dark .status-success {
+    @apply bg-success/20 text-success border border-success/40;
+  }
+
+  .dark .status-warning {
+    @apply bg-warning/20 text-warning border border-warning/40;
+  }
+
+  .dark .status-error {
+    @apply bg-destructive/20 text-destructive border border-destructive/40;
+  }
+
+  .dark .status-info {
+    @apply bg-primary/20 text-primary border border-primary/40;
   }
 }

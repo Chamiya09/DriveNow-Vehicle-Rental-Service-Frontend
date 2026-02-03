@@ -53,14 +53,37 @@ const AdminVehicleReviews = () => {
 
   const loadReviews = async () => {
     try {
-      // Load vehicle reviews from localStorage
-      const storedReviews = localStorage.getItem('all_reviews');
-      if (storedReviews) {
-        const vehicleReviewsData = JSON.parse(storedReviews);
-        console.log('Vehicle reviews loaded from localStorage:', vehicleReviewsData);
-        setVehicleReviews(vehicleReviewsData);
+      console.log('Fetching vehicle reviews from API...');
+      const response = await fetch('http://localhost:8090/api/reviews', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Fetched reviews from API:', data);
+        
+        // Map backend DTO to frontend format
+        const mappedReviews = data.map((review: any) => ({
+          id: review.id,
+          name: review.userName || 'Anonymous',
+          rating: review.rating,
+          comment: review.comment,
+          date: review.createdAt,
+          status: review.status.toLowerCase() as 'pending' | 'approved',
+          vehicleId: review.vehicleId,
+          vehicleName: review.vehicleName || 'Unknown Vehicle',
+          userId: review.userId || null,
+          userEmail: review.userEmail || null,
+        }));
+        
+        setVehicleReviews(mappedReviews);
       } else {
-        console.log('No vehicle reviews found in localStorage');
+        console.error('Failed to fetch reviews:', response.status);
+        toast.error('Failed to load reviews from server');
       }
     } catch (error) {
       console.error('Error loading reviews:', error);
@@ -69,49 +92,38 @@ const AdminVehicleReviews = () => {
   };
 
   const handleApproveReview = async (reviewId: number) => {
-    const allReviews: Review[] = JSON.parse(localStorage.getItem('all_reviews') || '[]');
-    const reviewIndex = allReviews.findIndex((r: Review) => r.id === reviewId);
-    
-    if (reviewIndex === -1) {
-      toast.error("Review not found");
-      return;
-    }
-
-    const review = allReviews[reviewIndex];
-    review.status = 'approved';
-    
-    allReviews[reviewIndex] = review;
-    localStorage.setItem('all_reviews', JSON.stringify(allReviews));
-    
-    const vehicleReviews: Review[] = JSON.parse(localStorage.getItem(`vehicle_reviews_${review.vehicleId}`) || '[]');
-    const vehicleReviewIndex = vehicleReviews.findIndex((r: Review) => r.id === reviewId);
-    if (vehicleReviewIndex !== -1) {
-      vehicleReviews[vehicleReviewIndex].status = 'approved';
-      localStorage.setItem(`vehicle_reviews_${review.vehicleId}`, JSON.stringify(vehicleReviews));
-    }
-    
-    if (review.userId) {
-      const userReviews: Review[] = JSON.parse(localStorage.getItem(`user_reviews_${review.userId}`) || '[]');
-      const userReviewIndex = userReviews.findIndex((r: Review) => r.id === reviewId);
-      if (userReviewIndex !== -1) {
-        userReviews[userReviewIndex].status = 'approved';
-        localStorage.setItem(`user_reviews_${review.userId}`, JSON.stringify(userReviews));
-      }
-    }
-    
-    loadReviews();
-    toast.success("Review approved successfully");
-    
-    if (review.userId) {
-      await sendNotificationToUser(review.userId, {
-        title: "Review Approved",
-        message: `Your review for ${review.vehicleName} has been approved and is now visible to other users.`,
-        type: "SUCCESS",
-        category: "REVIEW",
-        actionUrl: `/vehicles/${review.vehicleId}`,
-        isRead: false,
-        metadata: { vehicleId: review.vehicleId }
+    try {
+      const response = await fetch(`http://localhost:8090/api/reviews/${reviewId}/status?status=APPROVED`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
       });
+
+      if (response.ok) {
+        toast.success("Review approved successfully");
+        loadReviews(); // Reload reviews from API
+        
+        // Send notification to user
+        const review = vehicleReviews.find(r => r.id === reviewId);
+        if (review && review.userId) {
+          await sendNotificationToUser(review.userId, {
+            title: "Review Approved",
+            message: `Your review for ${review.vehicleName} has been approved and is now visible to other users.`,
+            type: "SUCCESS",
+            category: "REVIEW",
+            actionUrl: `/vehicles/${review.vehicleId}`,
+            isRead: false,
+            metadata: { vehicleId: review.vehicleId }
+          });
+        }
+      } else {
+        toast.error('Failed to approve review');
+      }
+    } catch (error) {
+      console.error('Error approving review:', error);
+      toast.error('Failed to approve review');
     }
   };
 
@@ -120,38 +132,39 @@ const AdminVehicleReviews = () => {
       return;
     }
 
-    const allReviews: Review[] = JSON.parse(localStorage.getItem('all_reviews') || '[]');
-    const review = allReviews.find((r: Review) => r.id === reviewId);
-    
-    if (!review) {
-      toast.error("Review not found");
-      return;
-    }
-    
-    const updatedAllReviews = allReviews.filter((r: Review) => r.id !== reviewId);
-    localStorage.setItem('all_reviews', JSON.stringify(updatedAllReviews));
-    
-    const vehicleReviews: Review[] = JSON.parse(localStorage.getItem(`vehicle_reviews_${review.vehicleId}`) || '[]');
-    const updatedVehicleReviews = vehicleReviews.filter((r: Review) => r.id !== reviewId);
-    localStorage.setItem(`vehicle_reviews_${review.vehicleId}`, JSON.stringify(updatedVehicleReviews));
-    
-    if (review.userId) {
-      const userReviews: Review[] = JSON.parse(localStorage.getItem(`user_reviews_${review.userId}`) || '[]');
-      const updatedUserReviews = userReviews.filter((r: Review) => r.id !== reviewId);
-      localStorage.setItem(`user_reviews_${review.userId}`, JSON.stringify(updatedUserReviews));
-    }
-    
-    loadReviews();
-    toast.success("Review rejected and deleted");
-    
-    if (review.userId) {
-      await sendNotificationToUser(review.userId, {
-        title: "Review Not Approved",
-        message: `Your review for ${review.vehicleName} did not meet our community guidelines and has been removed.`,
-        type: "WARNING",
-        category: "REVIEW",
-        isRead: false
+    try {
+      const review = vehicleReviews.find(r => r.id === reviewId);
+      
+      const response = await fetch(`http://localhost:8090/api/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
       });
+
+      if (response.ok) {
+        toast.success("Review rejected and deleted");
+        loadReviews(); // Reload reviews from API
+        
+        // Send notification to user
+        if (review && review.userId) {
+          await sendNotificationToUser(review.userId, {
+            title: "Review Not Approved",
+            message: `Your review for ${review.vehicleName} did not meet our community guidelines and has been removed.`,
+            type: "WARNING",
+            category: "REVIEW",
+            actionUrl: `/vehicles/${review.vehicleId}`,
+            isRead: false,
+            metadata: { vehicleId: review.vehicleId }
+          });
+        }
+      } else {
+        toast.error('Failed to delete review');
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      toast.error('Failed to delete review');
     }
   };
 

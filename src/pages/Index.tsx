@@ -53,25 +53,49 @@ const Index = () => {
     loadReviews();
   }, []);
 
-  const loadReviews = () => {
-    const storedReviews = localStorage.getItem('all_reviews');
-    if (storedReviews) {
-      const allReviews: Review[] = JSON.parse(storedReviews);
-      // Filter approved reviews, sort by rating, take top 3
-      const approvedReviews = allReviews
-        .filter(review => review.status === 'approved')
-        .sort((a, b) => {
-          if (b.rating !== a.rating) return b.rating - a.rating;
-          return b.id - a.id;
-        })
-        .slice(0, 3)
-        .map(review => ({
-          ...review,
-          role: review.role || 'Customer',
-          image: review.image || '',
-          vehicleRented: review.vehicleName
-        }));
-      setFeaturedReviews(approvedReviews);
+  const loadReviews = async () => {
+    try {
+      console.log('Fetching approved reviews for homepage...');
+      const response = await fetch('http://localhost:8090/api/reviews/approved', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Fetched approved reviews:', data);
+        
+        // Map backend DTO to frontend format and take top 3 by rating
+        const approvedReviews = data
+          .sort((a: any, b: any) => {
+            if (b.rating !== a.rating) return b.rating - a.rating;
+            return b.id - a.id;
+          })
+          .slice(0, 3)
+          .map((review: any) => ({
+            id: review.id,
+            name: review.userName || 'Anonymous',
+            role: 'Customer',
+            rating: review.rating,
+            comment: review.comment,
+            date: review.createdAt,
+            status: 'approved' as const,
+            vehicleId: review.vehicleId,
+            vehicleName: review.vehicleName || 'Unknown Vehicle',
+            userId: review.userId || null,
+            userEmail: review.userEmail || null,
+            image: review.userProfileImage || '',
+            vehicleRented: review.vehicleName || 'Unknown Vehicle'
+          }));
+        
+        setFeaturedReviews(approvedReviews);
+      } else {
+        console.error('Failed to fetch reviews:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
     }
   };
 

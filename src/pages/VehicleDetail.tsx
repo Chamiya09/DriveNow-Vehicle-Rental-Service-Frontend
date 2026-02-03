@@ -69,11 +69,45 @@ const VehicleDetail = () => {
     loadAutoApproveSetting();
   }, []);
 
-  // Load saved reviews from localStorage on component mount
+  // Load saved reviews from API on component mount
   useEffect(() => {
-    const savedReviews = localStorage.getItem(`vehicle_reviews_${id}`);
-    if (savedReviews) {
-      setUserReviews(JSON.parse(savedReviews));
+    const fetchVehicleReviews = async () => {
+      try {
+        console.log(`Fetching reviews for vehicle ${id}...`);
+        const response = await fetch(`http://localhost:8090/api/reviews/vehicle/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Fetched vehicle reviews:', data);
+          
+          // Map backend DTO to frontend format
+          const mappedReviews = data.map((review: any) => ({
+            id: review.id,
+            name: review.userName || 'Anonymous',
+            rating: review.rating,
+            comment: review.comment,
+            date: review.createdAt,
+            status: review.status.toLowerCase(),
+            vehicleId: review.vehicleId,
+            userId: review.userId || null,
+          }));
+          
+          setUserReviews(mappedReviews);
+        } else {
+          console.error('Failed to fetch vehicle reviews:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching vehicle reviews:', error);
+      }
+    };
+    
+    if (id) {
+      fetchVehicleReviews();
     }
   }, [id]);
 
@@ -182,6 +216,8 @@ const VehicleDetail = () => {
         // Try to parse error response as JSON first
         let errorMessage = "Unknown error occurred";
         try {
+          // Clone the response so we can read it multiple times if needed
+          const responseClone = response.clone();
           const errorData = await response.json();
           console.error("Error response (JSON):", errorData);
           
@@ -196,10 +232,14 @@ const VehicleDetail = () => {
             errorMessage = JSON.stringify(errorData);
           }
         } catch (jsonError) {
-          // If not JSON, try as text
-          const errorText = await response.text();
-          console.error("Error response (Text):", errorText);
-          errorMessage = errorText || `HTTP ${response.status}`;
+          // If not JSON, try as text from cloned response
+          try {
+            const errorText = await response.clone().text();
+            console.error("Error response (Text):", errorText);
+            errorMessage = errorText || `HTTP ${response.status}`;
+          } catch (textError) {
+            errorMessage = `HTTP ${response.status}`;
+          }
         }
 
         // Provide specific error messages based on status code
@@ -225,9 +265,28 @@ const VehicleDetail = () => {
       console.log("Saved review ID:", savedReview.id);
       console.log("Review data:", savedReview);
 
-      // Update local state with the saved review
-      const updatedReviews = [savedReview, ...userReviews];
-      setUserReviews(updatedReviews);
+      // Refresh reviews from API
+      const reviewsResponse = await fetch(`http://localhost:8090/api/reviews/vehicle/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (reviewsResponse.ok) {
+        const reviewsData = await reviewsResponse.json();
+        const mappedReviews = reviewsData.map((review: any) => ({
+          id: review.id,
+          name: review.userName || 'Anonymous',
+          rating: review.rating,
+          comment: review.comment,
+          date: review.createdAt,
+          status: review.status.toLowerCase(),
+          vehicleId: review.vehicleId,
+          userId: review.userId || null,
+        }));
+        setUserReviews(mappedReviews);
+      }
       
       // Notify based on auto-approve status
       if (autoApproveReviews) {

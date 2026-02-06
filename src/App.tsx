@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -50,37 +49,37 @@ const App = () => (
           <AuthProvider>
             <NotificationProvider>
               <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/vehicles" element={<Vehicles />} />
-              <Route path="/vehicles/:id" element={<VehicleDetail />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/reviews" element={<Reviews />} />
-              <Route path="/driver-reviews" element={<DriverReviews />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/driver/auth" element={<DriverAuth />} />
-              <Route path="/booking/:id" element={<ProtectedRoute><BookingFlow /></ProtectedRoute>} />
-              <Route path="/dashboard/user" element={<ProtectedRoute requiredRole="USER"><UserDashboard /></ProtectedRoute>} />
-              <Route path="/dashboard/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/users" element={<ProtectedRoute requiredRole="ADMIN"><AdminUsers /></ProtectedRoute>} />
-              <Route path="/admin/drivers" element={<ProtectedRoute requiredRole="ADMIN"><AdminDrivers /></ProtectedRoute>} />
-              <Route path="/admin/vehicles" element={<ProtectedRoute requiredRole="ADMIN"><AdminVehicles /></ProtectedRoute>} />
-              <Route path="/admin/bookings" element={<ProtectedRoute requiredRole="ADMIN"><AdminBookings /></ProtectedRoute>} />
-              <Route path="/admin/reviews" element={<ProtectedRoute requiredRole="ADMIN"><AdminReviews /></ProtectedRoute>} />
-              <Route path="/admin/driver-reviews" element={<ProtectedRoute requiredRole="ADMIN"><AdminDriverReviews /></ProtectedRoute>} />
-              <Route path="/admin/vehicle-reviews" element={<ProtectedRoute requiredRole="ADMIN"><AdminVehicleReviews /></ProtectedRoute>} />
-              <Route path="/admin/messages" element={<ProtectedRoute requiredRole="ADMIN"><AdminMessages /></ProtectedRoute>} />
-              <Route path="/admin/complaints" element={<ProtectedRoute requiredRole="ADMIN"><AdminComplaints /></ProtectedRoute>} />
-              <Route path="/dashboard/driver" element={<ProtectedRoute requiredRole="DRIVER"><DriverDashboard /></ProtectedRoute>} />
-              <Route path="/settings/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminSettings /></ProtectedRoute>} />
-              <Route path="/settings/driver" element={<ProtectedRoute requiredRole="DRIVER"><DriverSettings /></ProtectedRoute>} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/help" element={<Help />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/vehicles" element={<Vehicles />} />
+                <Route path="/vehicles/:id" element={<VehicleDetail />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/reviews" element={<Reviews />} />
+                <Route path="/driver-reviews" element={<DriverReviews />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/driver/auth" element={<DriverAuth />} />
+                <Route path="/booking/:id" element={<ProtectedRoute><BookingFlow /></ProtectedRoute>} />
+                <Route path="/dashboard/user" element={<ProtectedRoute requiredRole="USER"><UserDashboard /></ProtectedRoute>} />
+                <Route path="/dashboard/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/users" element={<ProtectedRoute requiredRole="ADMIN"><AdminUsers /></ProtectedRoute>} />
+                <Route path="/admin/drivers" element={<ProtectedRoute requiredRole="ADMIN"><AdminDrivers /></ProtectedRoute>} />
+                <Route path="/admin/vehicles" element={<ProtectedRoute requiredRole="ADMIN"><AdminVehicles /></ProtectedRoute>} />
+                <Route path="/admin/bookings" element={<ProtectedRoute requiredRole="ADMIN"><AdminBookings /></ProtectedRoute>} />
+                <Route path="/admin/reviews" element={<ProtectedRoute requiredRole="ADMIN"><AdminReviews /></ProtectedRoute>} />
+                <Route path="/admin/driver-reviews" element={<ProtectedRoute requiredRole="ADMIN"><AdminDriverReviews /></ProtectedRoute>} />
+                <Route path="/admin/vehicle-reviews" element={<ProtectedRoute requiredRole="ADMIN"><AdminVehicleReviews /></ProtectedRoute>} />
+                <Route path="/admin/messages" element={<ProtectedRoute requiredRole="ADMIN"><AdminMessages /></ProtectedRoute>} />
+                <Route path="/admin/complaints" element={<ProtectedRoute requiredRole="ADMIN"><AdminComplaints /></ProtectedRoute>} />
+                <Route path="/dashboard/driver" element={<ProtectedRoute requiredRole="DRIVER"><DriverDashboard /></ProtectedRoute>} />
+                <Route path="/settings/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminSettings /></ProtectedRoute>} />
+                <Route path="/settings/driver" element={<ProtectedRoute requiredRole="DRIVER"><DriverSettings /></ProtectedRoute>} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/help" element={<Help />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </NotificationProvider>
           </AuthProvider>
         </BrowserRouter>
@@ -90,40 +89,4 @@ const App = () => (
 );
 
 export default App;
-=======
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
-
-export default App
->>>>>>> 8f79dfd (feat: initialize React project with Vite)

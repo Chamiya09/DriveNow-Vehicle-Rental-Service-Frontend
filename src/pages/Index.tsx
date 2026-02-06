@@ -8,9 +8,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import VehicleCard from "@/components/VehicleCard";
 import ReviewCard from "@/components/ReviewCard";
-import heroCarImage from "@/assets/hero-car.jpg";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+
+// Placeholder hero car image
+const heroCarImage = "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920&q=80";
 
 interface Vehicle {
   id: number;
